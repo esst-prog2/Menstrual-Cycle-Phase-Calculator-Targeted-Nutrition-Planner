@@ -17,6 +17,7 @@ I open my terminal and run `python plan.py --last-period 2026-08-25 --cycle-leng
 * Tracks generated plans across cycles to rotate meals and avoid repetitive shopping lists.
 * Exports a clean Markdown checklist for grocery shopping.
 * Allows filtering out basic ingredients (like dairy or nuts).
+* Allows filtering different diet types (vegan, vegetarian, etc.)
 
 ### What it explicitly does NOT do this term:
 * Symptom, mood, or pain logging.
