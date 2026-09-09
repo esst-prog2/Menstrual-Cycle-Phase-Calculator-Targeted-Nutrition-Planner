@@ -15,6 +15,7 @@ I open my terminal and run `python plan.py --last-period 2026-08-25 --cycle-leng
 * Calculates the current cycle day and determines the active phase.
 * Reads recommendations from a local JSON database of phase-specific foods.
 * Tracks generated plans across cycles to rotate meals and avoid repetitive shopping lists.
+* It offers different food recommendations for each season.
 * Exports a clean Markdown checklist for grocery shopping.
 * Allows filtering out basic ingredients (like dairy or nuts).
 * Allows filtering different diet types (vegan, vegetarian, etc.)
