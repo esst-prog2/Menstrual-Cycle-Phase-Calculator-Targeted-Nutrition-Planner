@@ -1,32 +1,35 @@
 
-# PhasePlate: Menstrual Cycle Phase Calculator & Targeted Nutrition Planner
+## PhaseBite: Cycle-Based Grocery and Meal Planner
 
 ## 1. The Demo
-I open a terminal and run `phase-plate plan --last-period 2026-08-25 --cycle-length 28`. Within a second, it calculates that today is Day 15, placing me directly in the Ovulatory phase. The terminal displays a summary showing current hormone trends, the primary nutrient focus (fiber and zinc to support estrogen metabolism), and three suggested meal frameworks. I open the newly created `weekly_groceries.md`, which lists a categorized shopping list tailored specifically to the nutritional demands of the ovulatory window.
+I open my terminal and run `python plan.py --last-period 2026-08-25 --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints a short summary of the key nutrients I should focus on right now (like fiber and zinc) and suggests a few simple meals. Next to the script, it creates a clean file called `groceries.md` with a categorized shopping list for the week. Since it checks my previous logs in `history.json`, it rotates meal suggestions so I don't get the exact same grocery list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from that list.
 
 ## 2. The Shape
-**in:** A user profile (last period start date, average cycle length) and a structured JSON nutrition rulebook.  
-**out:** A terminal phase status card + a generated Markdown grocery and meal planning file (`weekly_groceries.md`).  
-**in between:** Calculate days elapsed since last period, determine the active cycle phase using calendar arithmetic, query the phase-to-nutrient rulebook, and compile targeted ingredients into an exportable checklist.
+**in:** The start date of my last period, my average cycle length, any food exclusions (optional), a local `nutrition_rules.json` rulebook, and a lightweight `history.json` tracking recent recommendations.  
+**out:** A short terminal summary + a freshly rotated `groceries.md` shopping list.  
+**in between:** Figure out the active phase, pull suitable ingredients from the food database, check previous months' history to ensure variety and avoid immediate repeats, filter out excluded items, and write out the Markdown checklist.
 
 ## 3. The Size
 ### What the first useful version does:
-* Computes current cycle day and identifies which of the 4 phases (Menstrual, Follicular, Ovulatory, Luteal) the user is in.
-* Maps the active phase to a local rulebook detailing key micronutrients, recommended food items, and items to minimize.
-* Generates an exportable Markdown file with a phase-specific grocery checklist.
-* Supports custom cycle lengths (e.g., 26 to 35 days) by dynamically scaling phase windows.
+* Takes a start date and cycle length from the command line.
+* Calculates the current cycle day and determines the active phase.
+* Reads recommendations from a local JSON database of phase-specific foods.
+* Tracks generated plans across cycles to rotate meals and avoid repetitive shopping lists.
+* Exports a clean Markdown checklist for grocery shopping.
+* Allows filtering out basic ingredients (like dairy or nuts).
 
 ### What it explicitly does NOT do this term:
-* Symptom tracking (cramps, mood logs, basal body temperature).
-* Irregular cycle prediction via complex machine learning or probabilistic algorithms.
-* Integration with third-party fitness or health platforms (Apple Health, Fitbit).
-* Clinical medical advice or diagnosis.
+* Symptom, mood, or pain logging.
+* Irregular cycle prediction or medical diagnostics.
+* Connecting to phones, fitness watches, or health apps.
+* A web interface or mobile app; it stays as a simple command-line tool.
 
 ## 4. How We Would Know It Works
-1. Given a start date set to exactly today, it outputs Day 1 and labels the phase as `Menstrual`.
-2. Given an invalid date in the future, it exits immediately with an error message indicating that the start date cannot be future-dated.
-3. Given a 28-day cycle where elapsed days equal 20, the calculated phase is strictly reported as `Luteal`, and the generated file includes magnesium and complex carbohydrate recommendations.
+1. If I enter a date that is in the future, the script stops and prints an error saying the date is invalid.
+2. If I set my last period start date to today, it always outputs Day 1 and identifies the phase as `Menstrual`.
+3. If I run the planner for two consecutive cycles in the same phase, the generated `groceries.md` offers a varied list by rotating alternative ingredients from the database.
 
 ## 5. What Could Stop This
-* **Date Parsing & Month Boundaries:** Calculation bugs occurring over month ends or leap years. *Mitigation:* Use Python's standard `datetime.date` objects and `timedelta` exclusively to handle calendar edge cases cleanly.
-* **Variable Phase Proportions:** Not everyone follows a textbook 28-day split. *Mitigation:* Implement standard follicular/luteal scaling ratios in the calculation logic based on the user's total entered cycle duration.
+* **Date math edge cases:** Handling month ends, leap years, or long cycles without breaking. *Plan:* Use Python's built-in `datetime` and `timedelta` modules and write unit tests for month boundary transitions.
+* **Rotation logic becoming too restrictive:** If the food pool is small, the rotation algorithm might run out of non-repeated items. *Plan:* Set up the rotation logic as a "prefer variety" soft rule with a fallback pool rather than a hard block that causes an error. years, or long cycles without breaking. *Plan:* Use Python's built-in `datetime` and `timedelta` modules and write tests for date edge cases early on.
+* **Messy nutrition rules:** Putting random foods in the rulebook without a consistent structure. *Plan:* Keep the JSON schema very simple with fixed keys (`phase`, `nutrients`, `foods`) and define the list before writing the logic.
