@@ -68,7 +68,7 @@ entry: no rule is added to the JSON without a corresponding line in
 * **Date math edge cases:** Handling month ends, leap years, or long cycles without breaking. *Plan:* Use Python's built-in `datetime` and `timedelta` modules and write unit tests for month boundary transitions.
 * **Rotation logic becoming too restrictive:** if a phase's food pool is small, the target overlap N may be difficult to satisfy. Plan: N is computed dynamically from pool size (soft constraint with a documented formula), and the tool logs when it must fall back to repeating items rather than silently producing an invalid list.
 
-  ## 7. Constratnt priorities
+  ## 7. Constraint priorities
   1. **Exclusions (hard constraint, never violated).** An excluded ingredient
    is never shown, regardless of how well it fits other constraints.
 2. **Nutrient coverage for the active phase (soft constraint, highest
