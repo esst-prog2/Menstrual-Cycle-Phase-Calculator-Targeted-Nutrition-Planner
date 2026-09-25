@@ -41,3 +41,4 @@
 2026-09-25 — README Section 1's demo uses "a date 14 days ago" instead of the fixed 2026-08-25, so it shows Day 15 / Ovulatory whenever it's run. Decided by: user.
 2026-09-25 — history.json keeps 3 entries per phase/nutrient (the current cycle plus the 2 before it), replacing the 2-entry cap, so a same-cycle recompute still checks both earlier cycles and the 2-cycle no-repeat rule always holds. Covered by a new test. Decided by: user, after Claude flagged the gap.
 2026-09-25 — nutrients.md is gitignored alongside history.json and history.json.bak, since it reveals the user's current phase and so their period timing (public repo). Decided by: user, after Claude raised it.
+2026-09-25 — Change "build-nutrient-planner-v1" archived, with its 4 specs synced to openspec/specs/ (cli-output, cycle-phase-calculation, nutrient-selection, rotation-history) as the project's main specs. Decided by: user.
