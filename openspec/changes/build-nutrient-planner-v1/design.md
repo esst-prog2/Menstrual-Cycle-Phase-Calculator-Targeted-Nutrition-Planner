@@ -10,7 +10,7 @@ Greenfield Python CLI — see `proposal.md` for motivation. The four capability 
 
 ## Decisions
 
-**`resolve_candidates()` is a pure function.** Signature roughly `resolve_candidates(candidates, exclusions, history, prefer_alternative) -> (chosen, alternative | None)`. It never reads `nutrition_rules.json` or `history.json` itself — the caller loads data and passes it in. This lets tests construct small synthetic candidate lists directly (e.g. to exercise a constraint tie-break) without touching real data files, and keeps a test failure attributable to either the ranking logic or the data loading, never an ambiguous mix of both. Alternative considered: resolving candidates inline during data loading — rejected because it would force tests to fake entire data files to exercise one ranking branch, and it's incompatible with keeping the placeholder data honest (no fabricated evidence labels just to make a test pass).
+**`resolve_candidates()` is a pure function.** Signature `resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative, season) -> Resolution` (chosen, alternative, deciding reason, forced-repeat and swapped flags). It never reads `nutrition_rules.json` or `history.json` itself — the caller loads data and passes it in. This lets tests construct small synthetic candidate lists directly (e.g. to exercise a constraint tie-break) without touching real data files, and keeps a test failure attributable to either the ranking logic or the data loading, never an ambiguous mix of both. Alternative considered: resolving candidates inline during data loading — rejected because it would force tests to fake entire data files to exercise one ranking branch, and it's incompatible with keeping the placeholder data honest (no fabricated evidence labels just to make a test pass).
 
 **Ovulation day is `cycle_length − 14`, not proportional scaling or a fixed day 14.** Grounded in ACOG/NHS: the luteal phase (ovulation to next period) stays close to 14 days regardless of cycle length; the follicular phase absorbs the variation. Scaling day 14 proportionally to cycle length (e.g. `14/28 × cycle_length`) would be physiologically wrong — it assumes the wrong phase is the variable one.
 
@@ -19,15 +19,16 @@ Greenfield Python CLI — see `proposal.md` for motivation. The four capability 
 {
   "<Phase>": {
     "<Nutrient>": [
+      {"cycle_start": "YYYY-MM-DD", "food": "...", "swapped": true},
       {"cycle_start": "YYYY-MM-DD", "food": "..."},
       {"cycle_start": "YYYY-MM-DD", "food": "..."}
     ]
   }
 }
 ```
-At most 2 entries per phase/nutrient, most recent first. `cycle_start` is the `--last-period` value active when that entry was written — this is what lets a same-cycle re-run be detected (compare today's `--last-period` to the most recent entry's `cycle_start`) without adding any new input or a separate cycle counter.
+At most 3 entries per phase/nutrient, most recent first: the current cycle plus the 2 before it. Keeping only 2 would mean that once the current cycle is recorded, a same-cycle recompute could check just 1 earlier cycle, silently weakening the 2-cycle no-repeat rule. `swapped` is optional and present only on an entry chosen with `--prefer-alternative`. `cycle_start` is the `--last-period` value active when that entry was written — this is what lets a same-cycle re-run be detected (compare today's `--last-period` to the most recent entry's `cycle_start`) without adding any new input or a separate cycle counter.
 
-**Same-cycle re-run logic:** if the most recent entry's `cycle_start` matches this run's `--last-period`, this is the same cycle. Reuse its cached `food` as-is unless this run's `--exclude` or `--prefer-alternative` would produce a different result for that slot — in which case call `resolve_candidates()` again with the updated inputs and overwrite that entry in place (still one entry for that cycle, not a second one). If `cycle_start` doesn't match, it's a new cycle: call `resolve_candidates()` against the last 2 *distinct* `cycle_start` entries' foods as the no-repeat set, then prepend the new entry and trim to 2.
+**Same-cycle re-run logic:** if the most recent entry's `cycle_start` matches this run's `--last-period`, this is the same cycle. The no-repeat set is the foods of the 2 entries after it. If the entry is `swapped` and its food is still allowed, keep it (the swap persists for the cycle) unless `--prefer-alternative` names this nutrient again. Otherwise call `resolve_candidates()` with this run's inputs: if the result matches the cached food nothing changes; if not (e.g. a new `--exclude` removed it), overwrite that entry in place (still one entry for that cycle, not a second one). If `cycle_start` doesn't match, it's a new cycle: call `resolve_candidates()` against the 2 most recent entries' foods as the no-repeat set, then prepend the new entry and trim to 3.
 
 **Corrupt `history.json` → backup, then reset, never crash.** Matches the project's general convention (established for the nutrient-selection fallback) of never silently refusing to produce output. Copy the unreadable file to `history.json.bak` before treating history as empty, so the original bytes aren't lost if the corruption is manually recoverable.
 

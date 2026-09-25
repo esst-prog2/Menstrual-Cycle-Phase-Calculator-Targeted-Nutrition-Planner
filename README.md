@@ -1,7 +1,7 @@
 Menstrual Cycle Phase Calculator and Targeted Nutrition Planner
 
 ## 1. The Demo
-I open my terminal and run `python plan.py --last-period 2026-08-25 --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints a short summary of the key nutrients that matter right now (like fiber and zinc) and, for each one, a food that contains it — for example, "zinc is important now, eat pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
+I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints a short summary of the key nutrients that matter right now (like fiber and zinc) and, for each one, a food that contains it — for example, "zinc is important now, eat pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
 
 ## 2. The Shape
 **in:** The start date of my last period, my average cycle length, any food exclusions (optional), a local `nutrition_rules.json` rulebook, and a lightweight `history.json` tracking recent recommendations.  

@@ -18,6 +18,20 @@ Placeholder labels, repeat-fallback notes, alternative notes, and "no suitable f
 - **WHEN** any of a placeholder label, a repeat-fallback note, an alternative note, or a no-suitable-food note applies to a nutrient this run
 - **THEN** that note appears in both the terminal output and `nutrients.md`
 
+### Requirement: Late-period note appears in both terminal and nutrients.md
+When the run falls in the late-period grace window, a "period may be late" note SHALL appear in both the terminal output and `nutrients.md`, since it qualifies every suggestion shown for that run.
+
+#### Scenario: Grace-window run
+- **WHEN** `--last-period` is between `cycle_length` and `cycle_length + 6` days ago
+- **THEN** both the terminal output and `nutrients.md` show a "period may be late" note
+
+### Requirement: Personal output files are not committed
+`history.json`, `history.json.bak`, and `nutrients.md` SHALL be listed in `.gitignore`, since each reveals the user's period timing and the repository is public.
+
+#### Scenario: Files ignored after a run
+- **WHEN** the tool has been run in the repository
+- **THEN** `git status` shows none of `history.json`, `history.json.bak`, or `nutrients.md`
+
 ### Requirement: history.json warnings are terminal-only
 A warning about an unreadable or corrupt `history.json` SHALL appear only in the terminal output, never in `nutrients.md`, since it is a one-time fact about the run rather than a property of any suggestion.
 

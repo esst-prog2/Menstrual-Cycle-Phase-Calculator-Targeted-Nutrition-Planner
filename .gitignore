@@ -1,3 +1,7 @@
-# Stores period dates — never commit to a public repo
+# Store or reveal period dates/timing — never commit to a public repo
 history.json
 history.json.bak
+nutrients.md
+
+# Python bytecode
+__pycache__/

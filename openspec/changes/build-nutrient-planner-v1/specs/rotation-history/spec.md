@@ -30,11 +30,15 @@ When a repeat cannot be avoided, the system SHALL show a note next to that item 
 - **THEN** a note to that effect is shown for that item
 
 ### Requirement: history.json structure
-History SHALL be recorded per phase and nutrient, with each entry tagged by the `--last-period` value of the cycle it belongs to. Only the most recent 2 distinct cycles SHALL be retained per slot.
+History SHALL be recorded per phase and nutrient, with each entry tagged by the `--last-period` value of the cycle it belongs to. At most 3 entries SHALL be retained per slot — the current cycle plus the 2 before it — so the 2-cycle no-repeat window stays complete even when the current cycle's pick is recomputed. An entry chosen with `--prefer-alternative` SHALL additionally carry `"swapped": true`, so a later same-cycle re-run keeps the swap.
 
 #### Scenario: Oldest cycle evicted
-- **WHEN** a third distinct cycle produces a new pick for a phase/nutrient slot
-- **THEN** the oldest of the previously-recorded 2 cycles' entries is dropped and the new one is kept
+- **WHEN** a fourth distinct cycle produces a new pick for a phase/nutrient slot
+- **THEN** the oldest of the previously-recorded 3 cycles' entries is dropped and the new one is kept
+
+#### Scenario: Same-cycle recompute still avoids both earlier cycles
+- **WHEN** a same-cycle re-run recomputes a slot's pick (e.g. a new `--exclude` removes the cached food) and 2 earlier cycles are recorded
+- **THEN** the new pick repeats neither of the 2 earlier cycles' foods, if the pool allows
 
 ### Requirement: Same-cycle re-run reuses the cached pick
 A run whose `--last-period` matches the most recently recorded cycle for a phase/nutrient slot SHALL reuse that cycle's cached pick without advancing the rotation window, unless `--exclude` or `--prefer-alternative` invalidates the cached pick — in which case that cycle's entry SHALL be recomputed and updated in place, not treated as a new rotation event.

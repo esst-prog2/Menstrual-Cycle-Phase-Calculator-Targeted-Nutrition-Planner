@@ -1,0 +1,779 @@
+{
+  "notice": "PLACEHOLDER DATA. Every nutrient-food pairing and every seasonal tag in this file is a hand-written stub, not evidence-reviewed nutrition advice. It will be replaced by the evidence-graded database described in README.md Section 4.",
+  "phases": {
+    "Menstrual": {
+      "Iron": [
+        {
+          "food": "lentils",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "spinach",
+          "categories": [],
+          "seasons": [
+            "spring",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "beef",
+          "categories": [
+            "meat"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "sardines",
+          "categories": [
+            "fish"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "tofu",
+          "categories": [
+            "soy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Vitamin C": [
+        {
+          "food": "oranges",
+          "categories": [],
+          "seasons": [
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "bell peppers",
+          "categories": [],
+          "seasons": [
+            "summer"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "strawberries",
+          "categories": [],
+          "seasons": [
+            "spring",
+            "summer"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "broccoli",
+          "categories": [],
+          "seasons": [
+            "autumn",
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "kiwi",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Magnesium": [
+        {
+          "food": "pumpkin seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "almonds",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "black beans",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "cashews",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "whole-wheat bread",
+          "categories": [
+            "gluten"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ]
+    },
+    "Follicular": {
+      "Folate": [
+        {
+          "food": "chickpeas",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "asparagus",
+          "categories": [],
+          "seasons": [
+            "spring"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "avocado",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "edamame",
+          "categories": [
+            "soy"
+          ],
+          "seasons": [
+            "summer"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "brussels sprouts",
+          "categories": [],
+          "seasons": [
+            "autumn",
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Protein": [
+        {
+          "food": "eggs",
+          "categories": [
+            "eggs"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "greek yogurt",
+          "categories": [
+            "dairy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "chicken",
+          "categories": [
+            "meat"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "tempeh",
+          "categories": [
+            "soy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "lentils",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Vitamin E": [
+        {
+          "food": "sunflower seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "almonds",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "hazelnuts",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "peanut butter",
+          "categories": [
+            "peanuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "avocado",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ]
+    },
+    "Ovulatory": {
+      "Fiber": [
+        {
+          "food": "raspberries",
+          "categories": [],
+          "seasons": [
+            "summer"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "pears",
+          "categories": [],
+          "seasons": [
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "oats",
+          "categories": [
+            "gluten"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "chia seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "split peas",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Zinc": [
+        {
+          "food": "pumpkin seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "oysters",
+          "categories": [
+            "shellfish"
+          ],
+          "seasons": [
+            "autumn",
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "beef",
+          "categories": [
+            "meat"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "pork loin",
+          "categories": [
+            "meat",
+            "pork"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "cheddar cheese",
+          "categories": [
+            "dairy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Omega-3": [
+        {
+          "food": "salmon",
+          "categories": [
+            "fish"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "walnuts",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "flaxseeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "chia seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "mackerel",
+          "categories": [
+            "fish"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ]
+    },
+    "Luteal": {
+      "Magnesium": [
+        {
+          "food": "swiss chard",
+          "categories": [],
+          "seasons": [
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "pumpkin seeds",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "almonds",
+          "categories": [
+            "nuts"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "black beans",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "tahini",
+          "categories": [
+            "sesame"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Calcium": [
+        {
+          "food": "yogurt",
+          "categories": [
+            "dairy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "sardines",
+          "categories": [
+            "fish"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "kale",
+          "categories": [],
+          "seasons": [
+            "autumn",
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "calcium-set tofu",
+          "categories": [
+            "soy"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "sesame seeds",
+          "categories": [
+            "sesame"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ],
+      "Vitamin B6": [
+        {
+          "food": "chickpeas",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "bananas",
+          "categories": [],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "salmon",
+          "categories": [
+            "fish"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "potatoes",
+          "categories": [],
+          "seasons": [
+            "autumn",
+            "winter"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        },
+        {
+          "food": "turkey",
+          "categories": [
+            "meat"
+          ],
+          "seasons": [
+            "winter",
+            "spring",
+            "summer",
+            "autumn"
+          ],
+          "placeholder": true,
+          "seasons_placeholder": true
+        }
+      ]
+    }
+  }
+}

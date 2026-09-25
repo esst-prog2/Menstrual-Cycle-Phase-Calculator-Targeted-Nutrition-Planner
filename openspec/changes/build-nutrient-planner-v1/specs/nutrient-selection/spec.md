@@ -12,11 +12,15 @@ Each of the four phases SHALL track exactly 3 nutrients, the same number in ever
 - **THEN** exactly 3 nutrients are shown for that phase
 
 ### Requirement: Category tags for exclusion matching
-Every stub food entry SHALL carry one or more category tags drawn from the fixed set: `dairy`, `eggs`, `gluten`, `nuts`, `peanuts`, `soy`, `fish`, `shellfish`, `sesame`, `meat`, `pork` — covering common allergens and foods avoided for diet or religious reasons. A food MAY carry several tags; a pork food SHALL carry both `meat` and `pork`. Excluding a single food by name is not supported in v1 — category is the only exclusion mechanism.
+Every stub food entry SHALL carry a list of category tags drawn only from the fixed set: `dairy`, `eggs`, `gluten`, `nuts`, `peanuts`, `soy`, `fish`, `shellfish`, `sesame`, `meat`, `pork` — covering common allergens and foods avoided for diet or religious reasons. The list MAY be empty when no category applies (e.g. spinach: `[]`); a food with no tags is never removed by `--exclude`. A food MAY carry several tags; a pork food SHALL carry both `meat` and `pork`. Excluding a single food by name is not supported in v1 — category is the only exclusion mechanism.
 
 #### Scenario: Food carries a category tag
 - **WHEN** a stub food entry is added to `nutrition_rules.json`
-- **THEN** it has at least one category tag from the fixed set
+- **THEN** its tag list contains only values from the fixed set, and may be empty
+
+#### Scenario: Untagged food is never excluded
+- **WHEN** a food has an empty tag list and any `--exclude` value is active
+- **THEN** that food remains a valid candidate
 
 #### Scenario: Pork food carries both tags
 - **WHEN** a stub food entry is pork
@@ -46,6 +50,10 @@ If two or more valid candidates remain and rank differently, the system SHALL sh
 #### Scenario: Alternative note states the real reason
 - **WHEN** two valid candidates for a nutrient slot are ranked differently by a soft constraint (e.g. seasonality or no-repeat)
 - **THEN** the shown alternative note names that specific constraint as the reason, matching whichever one actually broke the tie
+
+#### Scenario: Full tie shows no alternative note
+- **WHEN** the top two valid candidates rank equally on every constraint
+- **THEN** the first in list order is shown with no alternative note, and `--prefer-alternative` still swaps to the next candidate
 
 ### Requirement: --prefer-alternative swaps and persists for the cycle
 `--prefer-alternative <nutrient>` SHALL swap the named nutrient's shown food to its available alternative for the remainder of the current cycle. If the named nutrient has no alternative available, the system SHALL error clearly rather than swap silently or guess.

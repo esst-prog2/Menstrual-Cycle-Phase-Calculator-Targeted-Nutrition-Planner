@@ -42,11 +42,26 @@ The system SHALL reject a `--last-period` date that is in the future, printing a
 - **THEN** the system accepts the input and proceeds
 
 ### Requirement: Cycle day calculation
-Given a valid `--last-period` and `--cycle-length`, the system SHALL calculate the current cycle day as `((today − last_period).days mod cycle_length) + 1`.
+Given a valid `--last-period` and `--cycle-length`, the system SHALL calculate the current cycle day as `elapsed + 1`, where `elapsed = (today − last_period).days`, with no modulo — every accepted `--last-period` lies within the current cycle or its late-period grace window, so the day never wraps into a new cycle.
 
 #### Scenario: Last period is today
 - **WHEN** `--last-period` equals today's date
 - **THEN** the system reports cycle day 1
+
+#### Scenario: Day past the cycle length is not wrapped
+- **WHEN** cycle length is 28 and `--last-period` was 31 days ago
+- **THEN** the system reports cycle day 32, not day 4
+
+### Requirement: Late-period grace window
+If `cycle_length ≤ elapsed < cycle_length + 7`, the system SHALL treat the day as a late-period grace day: the phase SHALL be Luteal (forced, not recomputed from the boundaries) and the run SHALL be flagged as possibly late. If `elapsed ≥ cycle_length + 7`, the system SHALL reject the input with an error naming the 7-day grace limit, since more than 7 days of variation is an irregular cycle, which is out of scope.
+
+#### Scenario: Inside the grace window
+- **WHEN** cycle length is 28 and `--last-period` was 30 days ago
+- **THEN** the system reports cycle day 31, the Luteal phase, and flags that the period may be late
+
+#### Scenario: Past the grace window
+- **WHEN** cycle length is 28 and `--last-period` was 35 days ago
+- **THEN** the system stops with an error naming the 7-day grace limit, and produces no output
 
 ### Requirement: Phase boundaries
 The system SHALL determine the active phase from the cycle day using fixed boundaries: Menstrual is days 1–5; the Ovulatory window is `ovulation_day − 1` to `ovulation_day + 1` where `ovulation_day = cycle_length − 14`; Follicular is day 6 through `ovulation_day − 2`; Luteal is `ovulation_day + 2` through the last day of the cycle.
