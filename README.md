@@ -1,7 +1,22 @@
 Menstrual Cycle Phase Calculator and Targeted Nutrition Planner
 
+> **Evidence note.** The phase-nutrient pairings this tool uses are mostly
+> *not* backed by phase-specific evidence. A review of all 12 pairs in
+> `nutrition_rules.json` (see [EVIDENCE.md](EVIDENCE.md)) found **2 Strong,
+> 4 Moderate, 1 Weak, and 5 Speculative**. The Follicular phase has no
+> supported pairing at all, and one Ovulatory pairing (fiber) has evidence
+> pointing the other way. Where support exists, it is for **daily
+> supplementation to relieve PMS or period pain**, not for eating particular
+> foods in a particular phase. Treat the output as a prompt to eat varied
+> foods, not as medical or nutrition advice. See Section 4.
+
+## Requirements
+Python 3.10 or newer. `plan.py` uses the `dict | None` type-union syntax
+(e.g. [plan.py:109](plan.py#L109)), which older Python versions reject.
+There are no third-party dependencies.
+
 ## 1. The Demo
-I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints a short summary of the key nutrients that matter right now (like fiber and zinc) and, for each one, a food that contains it — for example, "zinc is important now, eat pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
+I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints the nutrients the rulebook pairs with that phase (like fiber and zinc, both rated Speculative in [EVIDENCE.md](EVIDENCE.md)) and, for each one, a food that contains it, for example "zinc: pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
 
 ## 2. The Shape
 **in:** The start date of my last period, my average cycle length, any food exclusions (optional), a local `nutrition_rules.json` rulebook, and a lightweight `history.json` tracking recent recommendations.  
@@ -12,7 +27,7 @@ I open my terminal and run `python plan.py --last-period <a date 14 days ago> --
 ### What the first useful version does:
 * Takes a start date and cycle length from the command line.
 * Calculates the current cycle day and determines the active phase.
-* Reads nutrient-food pairings from a local JSON database of phase-specific foods.
+* Reads nutrient-food pairings from a local JSON database that assigns nutrients to phases (these assignments are mostly not evidence-backed; see Section 4).
 * Tracks generated suggestions across cycles to rotate foods and avoid repeating the same food for a nutrient too soon.
 * Exports a clean Markdown list of nutrients and their suggested foods.
 * Allows filtering out basic ingredients (like dairy or nuts).
@@ -26,10 +41,43 @@ I open my terminal and run `python plan.py --last-period <a date 14 days ago> --
 
 ## 4. Evidence Basis for nutrition_rules.json
 
-`nutrition_rules.json` has not been populated yet. It will be built alongside
-an `EVIDENCE.md` file, not after it. For each phase-nutrient rule added to the
-database, the following will be recorded before the rule is accepted into the
-JSON:
+### What the evidence review found (2026-09-30)
+
+`nutrition_rules.json` currently holds hand-written placeholder pairings
+(3 nutrients × 4 phases = 12). Each pair was checked against PubMed,
+Cochrane, ACOG, NHS and EFSA for a source supporting that nutrient in that
+specific phase. Full citations, DOIs and verbatim quotes are in
+[EVIDENCE.md](EVIDENCE.md).
+
+| Tier | Count | Pairs |
+|---|---|---|
+| Strong | 2 / 12 | Menstrual Iron, Luteal Calcium |
+| Moderate | 4 / 12 | Menstrual Vitamin C, Menstrual Magnesium, Luteal Magnesium, Luteal Vitamin B6 |
+| Weak | 1 / 12 | Ovulatory Omega-3 |
+| Speculative | 5 / 12 | Follicular Folate, Protein, Vitamin E; Ovulatory Fiber, Zinc |
+
+What this means for how the tool's output should be read:
+
+- **The support is for daily supplements that relieve symptoms, not for
+  eating certain foods in a certain phase.** The calcium, magnesium and
+  vitamin B6 findings come from trials where supplements were taken every
+  day, usually across the whole cycle, to relieve PMS or period pain. They
+  show these nutrients help symptoms that occur in the luteal or menstrual
+  phase. They do not show that eating them only in that phase matters. Even
+  the iron pairing reflects blood loss during menstruation, but iron stores
+  are rebuilt over weeks, not in one phase.
+- **The Follicular phase has no supported pairing.**
+- **Ovulatory Fiber has evidence against it.** The one direct study linked
+  higher fiber intake to more cycles without ovulation.
+- **The tool does not supplement or dose.** Section 3's no-supplements scope
+  still holds, so even the Strong pairings are shown only as food examples.
+
+The pairings were deliberately left unchanged after this review; only this
+README's framing was corrected (PLANNING_LOG.md, 2026-09-30).
+
+### How rules are graded
+
+For each phase-nutrient rule, the following is recorded in `EVIDENCE.md`:
 
 1. **Source**: a specific citation (study, systematic review, or named
    consensus guideline) — not a wellness blog unless that blog cites a
@@ -50,8 +98,8 @@ JSON:
    is surfaced to the user in the terminal output and in `nutrients.md`,
    rather than presented with the same confidence as Strong rules.
 
-`nutrition_rules.json` and `EVIDENCE.md` will be built together, entry by
-entry: no rule is added to the JSON without a corresponding line in
+From here on, `nutrition_rules.json` and `EVIDENCE.md` are kept in step:
+no rule is added to the JSON without a corresponding entry in
 `EVIDENCE.md`.
 
 ## 5. How We Would Know It Works
