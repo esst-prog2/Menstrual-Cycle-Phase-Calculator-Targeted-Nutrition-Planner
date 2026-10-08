@@ -47,3 +47,32 @@
 2026-10-08 — Requirement: the program must never show a nutrient suggestion without stating its evidence tier, and exactly 7 of the 12 phase-nutrient pairings must be marked as having a medical source; a test goes red if either breaks. This replaces the 2026-09-24 "stub rules carry no evidence-strength label" decision and the 2026-09-30 "nutrition_rules.json is NOT changed" decision, but only for the per-pairing tier: stub foods stay unlabelled placeholders. Decided by: user.
 2026-10-08 — Implementation of the above: nutrition_rules.json gets a top-level "evidence" map (phase → nutrient → {tier, source}), copied from EVIDENCE.md's summary table, with source null exactly when the tier is Speculative. The terminal shows "(evidence: <tier>)" on each nutrient line, and nutrients.md gets an Evidence column with the tier and the source (or "no supporting source found"). The tier is shown even when exclusions remove every food. A missing or inconsistent tier stops the run before any file is written. The nutrient-selection spec's "Placeholder labeling" requirement was edited in place and a new "Evidence tier per nutrient" requirement was added. Decided by: Claude.
 2026-10-08 — The expected evidence values in the tests (7 of 12 pairings sourced; 2 Strong, 4 Moderate, 1 Weak, 5 Speculative; and each pairing's tier) come from the Homework 4 spike in EVIDENCE.md (searched 2026-09-30) and are hardcoded in the tests, never derived from running the code. Decided by: user.
+2026-10-08 — Mutation check: swapped the evidence entries (tier and source) of Menstrual Iron and Follicular Folate in nutrition_rules.json and ran `python3 -m unittest discover -s tests`. Red output (exit 1):
+
+```
+..........F......................................................
+======================================================================
+FAIL: test_each_claim_has_its_spike_tier (test_plan.TestEvidenceTiers.test_each_claim_has_its_spike_tier)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/itirbozdag/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
+    self.assertEqual(actual, self.SPIKE_TIERS)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {('Me[16 chars]): 'Speculative', ('Menstrual', 'Vitamin C'): [387 chars]ate'} != {('Me[16 chars]): 'Strong', ('Menstrual', 'Vitamin C'): 'Mode[387 chars]ate'}
+Diff is 731 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 65 tests in 0.082s
+
+FAILED (failures=1)
+```
+
+2026-10-08 — Mutation check, restored: put both entries back by editing nutrition_rules.json (no git reset; the file is byte-identical to commit 66d10a3) and reran `python3 -m unittest discover -s tests`. Green output (exit 0):
+
+```
+.................................................................
+----------------------------------------------------------------------
+Ran 65 tests in 0.083s
+
+OK
+```
