@@ -53,8 +53,11 @@ class Workspace(unittest.TestCase):
     def markdown(self):
         return (self.dir / "nutrients.md").read_text()
 
-    def use_rules(self, phases):
-        (self.dir / "nutrition_rules.json").write_text(json.dumps({"notice": "test", "phases": phases}))
+    def use_rules(self, phases, evidence=None):
+        if evidence is None:
+            evidence = {p: {n: {"tier": "Speculative", "source": None} for n in ns} for p, ns in phases.items()}
+        (self.dir / "nutrition_rules.json").write_text(
+            json.dumps({"notice": "test", "evidence": evidence, "phases": phases}))
 
 
 # ------------------------------------------------------------------ 1. setup
@@ -199,6 +202,47 @@ class TestStubData(unittest.TestCase):
             if "pork" in entry["categories"]:
                 self.assertIn("meat", entry["categories"])
         self.assertTrue(any("pork" in e["categories"] for e in self.entries))
+
+
+class TestEvidenceTiers(unittest.TestCase):
+    """The per-claim tiers must match the Homework 4 evidence spike (EVIDENCE.md, searched
+    2026-09-30). Expected values are copied from that document, never derived from the code."""
+
+    SPIKE_TIERS = {
+        ("Menstrual", "Iron"): "Strong", ("Menstrual", "Vitamin C"): "Moderate",
+        ("Menstrual", "Magnesium"): "Moderate", ("Follicular", "Folate"): "Speculative",
+        ("Follicular", "Protein"): "Speculative", ("Follicular", "Vitamin E"): "Speculative",
+        ("Ovulatory", "Fiber"): "Speculative", ("Ovulatory", "Zinc"): "Speculative",
+        ("Ovulatory", "Omega-3"): "Weak", ("Luteal", "Magnesium"): "Moderate",
+        ("Luteal", "Calcium"): "Strong", ("Luteal", "Vitamin B6"): "Moderate",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        data = json.loads((ROOT / "nutrition_rules.json").read_text())
+        cls.phases, cls.evidence = data["phases"], data["evidence"]
+        cls.claims = [cls.evidence[p][n] for p, ns in cls.phases.items() for n in ns]
+
+    def test_every_claim_has_a_tier(self):
+        self.assertEqual(len(self.claims), 12)
+        for claim in self.claims:
+            self.assertIn(claim["tier"], plan.EVIDENCE_RANK)
+
+    def test_seven_of_twelve_claims_have_a_medical_source(self):
+        sourced = [c for c in self.claims if c["source"] is not None]
+        self.assertEqual((len(sourced), len(self.claims)), (7, 12))
+        for claim in self.claims:
+            self.assertEqual(claim["source"] is None, claim["tier"] == "Speculative", claim)
+
+    def test_tier_counts_match_evidence_md(self):
+        tiers = [c["tier"] for c in self.claims]
+        self.assertEqual({t: tiers.count(t) for t in plan.EVIDENCE_RANK},
+                         {"Strong": 2, "Moderate": 4, "Weak": 1, "Speculative": 5})
+
+    def test_each_claim_has_its_spike_tier(self):
+        actual = {(p, n): self.evidence[p][n]["tier"] for p, ns in self.phases.items() for n in ns}
+        self.assertEqual(actual, self.SPIKE_TIERS)
+
 
 
 # ------------------------------------------------- 4. candidate resolution
@@ -455,6 +499,39 @@ class TestOutput(Workspace):
         for text in (out, md):
             self.assertEqual(text.count(plan.DISCLAIMER), 1)
             self.assertEqual(text.count("[placeholder]"), 3)
+
+    def test_every_suggestion_states_its_evidence_tier_in_both(self):
+        data = json.loads((ROOT / "nutrition_rules.json").read_text())
+        for elapsed in (0, 8, 14, 20):                       # Menstrual, Follicular, Ovulatory, Luteal
+            out, _ = self.run_plan("--last-period", days_ago(elapsed), "--cycle-length", "28")
+            phase = plan.phase_for_day(elapsed + 1, 28)
+            md = self.markdown()
+            for nutrient, claim in data["evidence"][phase].items():
+                line = next(l for l in out.splitlines() if l.startswith(f"  {nutrient}: "))
+                self.assertTrue(line.endswith(f"(evidence: {claim['tier']})"), line)
+                row = next(l for l in md.splitlines() if l.startswith(f"| {nutrient} |"))
+                self.assertIn(f"| {claim['tier']} - {claim['source'] or plan.NO_SOURCE} |", row)
+
+    def test_tier_shown_even_when_every_food_is_excluded(self):
+        self.use_rules({p: {"A": [food("a1", ["fish"])], "B": [food("b1")], "C": [food("c1")]}
+                        for p in plan.PHASES})
+        out, _ = self.run_plan(*self.OVULATORY, "--exclude", "fish")
+        self.assertIn("A: (none) (evidence: Speculative)", out)
+
+    def test_missing_tier_stops_the_run_before_any_suggestion(self):
+        phases = {p: {"A": [food("a1")], "B": [food("b1")], "C": [food("c1")]} for p in plan.PHASES}
+        evidence = {p: {"A": {"tier": "Strong", "source": "x"}, "B": {"tier": "Weak", "source": "y"}}
+                    for p in plan.PHASES}                    # C has no tier
+        self.use_rules(phases, evidence)
+        err = self.run_error(*self.OVULATORY)
+        self.assertIn("Menstrual/C has no evidence tier", err)
+        self.assertFalse((self.dir / "nutrients.md").exists())
+
+    def test_sourced_tier_without_source_rejected(self):
+        phases = {p: {"A": [food("a1")]} for p in plan.PHASES}
+        self.use_rules(phases, {p: {"A": {"tier": "Moderate", "source": None}} for p in plan.PHASES})
+        err = self.run_error(*self.OVULATORY)
+        self.assertIn("Menstrual/A is Moderate, so its source must be named", err)
 
     def test_alternative_note_with_real_reason_in_both(self):
         self.use_rules({p: {"Fiber": [food("raspberries", seasons=["summer"]),
