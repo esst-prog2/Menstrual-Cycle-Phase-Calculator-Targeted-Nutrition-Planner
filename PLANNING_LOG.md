@@ -76,3 +76,43 @@ Ran 65 tests in 0.083s
 
 OK
 ```
+
+2026-10-08 — User's prediction, recorded verbatim before the real run (program not yet run). Decided by: user.
+
+Before running: I am on my period, so I expect the Menstrual phase, with Iron (evidence: Strong), Vitamin C (Moderate) and Magnesium (Moderate). All three should show a source, none "no supporting source found".
+
+2026-10-08 — Real run, done by the user in their own terminal: `python plan.py --last-period 2026-10-06 --cycle-length 28`. Decided by: user.
+
+Terminal output:
+
+```
+PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+  Iron: lentils [placeholder] (evidence: Strong)
+  Vitamin C: broccoli [placeholder] (evidence: Moderate)
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds [placeholder] (evidence: Moderate)
+```
+
+nutrients.md:
+
+```
+# Nutrients for the Menstrual phase
+
+Generated 2026-10-08 - day 3 of a 28-day cycle.
+
+> **PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.**
+
+| Nutrient | Evidence | Food | Notes |
+| --- | --- | --- | --- |
+| Iron | Strong - Cochrane CD009747 (2016); NHS | lentils [placeholder] |  |
+| Vitamin C | Moderate - EFSA 2014 opinion; Cook & Reddy 2001 | broccoli [placeholder] | chosen over oranges - out of season; swap with --prefer-alternative vitamin c |
+| Magnesium | Moderate - Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020 | pumpkin seeds [placeholder] |  |
+```
+
+2026-10-08 — The real run matched the prediction: Menstrual phase, Iron (Strong), Vitamin C (Moderate), Magnesium (Moderate), all three with a source in nutrients.md. Decided by: user.
+2026-10-08 — Open gap, not yet checked by any test: Ovulatory Fiber is still suggested although EVIDENCE.md says the evidence points against it. Noted by: user; no decision yet.
+2026-10-08 — Open gap, not yet checked by any test: the evidence label does not tell the user that most sources are for the whole cycle or for supplements, not for eating the food in this one phase. Noted by: user; no decision yet.
