@@ -1,5 +1,63 @@
 {
-  "notice": "PLACEHOLDER DATA. Every nutrient-food pairing and every seasonal tag in this file is a hand-written stub, not evidence-reviewed nutrition advice. It will be replaced by the evidence-graded database described in README.md Section 4.",
+  "notice": "PLACEHOLDER DATA. Every nutrient-food pairing and every seasonal tag in this file is a hand-written stub, not evidence-reviewed nutrition advice. It will be replaced by the evidence-graded database described in README.md Section 4. The one exception is \"evidence\": its tier and key source for each phase-nutrient claim are copied from EVIDENCE.md (source is null when no supporting source was found).",
+  "evidence": {
+    "Menstrual": {
+      "Iron": {
+        "tier": "Strong",
+        "source": "Cochrane CD009747 (2016); NHS"
+      },
+      "Vitamin C": {
+        "tier": "Moderate",
+        "source": "EFSA 2014 opinion; Cook & Reddy 2001"
+      },
+      "Magnesium": {
+        "tier": "Moderate",
+        "source": "Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020"
+      }
+    },
+    "Follicular": {
+      "Folate": {
+        "tier": "Speculative",
+        "source": null
+      },
+      "Protein": {
+        "tier": "Speculative",
+        "source": null
+      },
+      "Vitamin E": {
+        "tier": "Speculative",
+        "source": null
+      }
+    },
+    "Ovulatory": {
+      "Fiber": {
+        "tier": "Speculative",
+        "source": null
+      },
+      "Zinc": {
+        "tier": "Speculative",
+        "source": null
+      },
+      "Omega-3": {
+        "tier": "Weak",
+        "source": "Mumford 2016 (BioCycle)"
+      }
+    },
+    "Luteal": {
+      "Magnesium": {
+        "tier": "Moderate",
+        "source": "ACOG; Moslehi 2019; Robinson 2025"
+      },
+      "Calcium": {
+        "tier": "Strong",
+        "source": "Thys-Jacobs 1998; Whelan 2009; Arab 2020; ACOG"
+      },
+      "Vitamin B6": {
+        "tier": "Moderate",
+        "source": "Wyatt 1999 (BMJ); Robinson 2025"
+      }
+    }
+  },
   "phases": {
     "Menstrual": {
       "Iron": [

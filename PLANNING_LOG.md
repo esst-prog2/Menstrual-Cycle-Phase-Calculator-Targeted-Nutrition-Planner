@@ -44,3 +44,75 @@
 2026-09-25 — Change "build-nutrient-planner-v1" archived, with its 4 specs synced to openspec/specs/ (cli-output, cycle-phase-calculation, nutrient-selection, rotation-history) as the project's main specs. Decided by: user.
 2026-09-30 — Spike answered in EVIDENCE.md: 7 of 12 phase-nutrient claims have a traceable supporting source — Strong 2 (Menstrual Iron, Luteal Calcium), Moderate 4 (Menstrual Vitamin C, Menstrual Magnesium, Luteal Magnesium, Luteal Vitamin B6), Weak 1 (Ovulatory Omega-3), Speculative 5 (Follicular Folate, Protein, Vitamin E; Ovulatory Fiber, Zinc). Grading rules: a source only counts if it supports the nutrient in that specific phase (adjacent evidence is listed but the claim is marked "none found"), and contrary evidence counts against a claim — Ovulatory Fiber is contradicted by the BioCycle fiber study, not just unsupported. Decided by: Claude (tier assignments and grading rules), answering the user's spike question.
 2026-09-30 — Decision from the evidence spike: of the 12 phase-nutrient pairs, 2/12 are Strong (Menstrual Iron, Luteal Calcium), 4/12 Moderate, 1/12 Weak, and 5/12 Speculative (none found). The Follicular phase has zero substantiated claims, and Ovulatory Fiber shows evidence of adverse effects (higher anovulation risk). The evidence supports continuous daily supplementation for symptom relief (PMS, period pain), not a phase-timed diet. Therefore nutrition_rules.json is NOT changed; instead README.md softens its phase-specific framing, cites these findings and EVIDENCE.md, and states the Python 3.10+ runtime requirement (plan.py uses `dict | None` syntax, plan.py:109). Decided by: user.
+2026-10-08 — Requirement: the program must never show a nutrient suggestion without stating its evidence tier, and exactly 7 of the 12 phase-nutrient pairings must be marked as having a medical source; a test goes red if either breaks. This replaces the 2026-09-24 "stub rules carry no evidence-strength label" decision and the 2026-09-30 "nutrition_rules.json is NOT changed" decision, but only for the per-pairing tier: stub foods stay unlabelled placeholders. Decided by: user.
+2026-10-08 — Implementation of the above: nutrition_rules.json gets a top-level "evidence" map (phase → nutrient → {tier, source}), copied from EVIDENCE.md's summary table, with source null exactly when the tier is Speculative. The terminal shows "(evidence: <tier>)" on each nutrient line, and nutrients.md gets an Evidence column with the tier and the source (or "no supporting source found"). The tier is shown even when exclusions remove every food. A missing or inconsistent tier stops the run before any file is written. The nutrient-selection spec's "Placeholder labeling" requirement was edited in place and a new "Evidence tier per nutrient" requirement was added. Decided by: Claude.
+2026-10-08 — The expected evidence values in the tests (7 of 12 pairings sourced; 2 Strong, 4 Moderate, 1 Weak, 5 Speculative; and each pairing's tier) come from the Homework 4 spike in EVIDENCE.md (searched 2026-09-30) and are hardcoded in the tests, never derived from running the code. Decided by: user.
+2026-10-08 — Mutation check: swapped the evidence entries (tier and source) of Menstrual Iron and Follicular Folate in nutrition_rules.json and ran `python3 -m unittest discover -s tests`. Red output (exit 1):
+
+```
+..........F......................................................
+======================================================================
+FAIL: test_each_claim_has_its_spike_tier (test_plan.TestEvidenceTiers.test_each_claim_has_its_spike_tier)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/itirbozdag/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
+    self.assertEqual(actual, self.SPIKE_TIERS)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {('Me[16 chars]): 'Speculative', ('Menstrual', 'Vitamin C'): [387 chars]ate'} != {('Me[16 chars]): 'Strong', ('Menstrual', 'Vitamin C'): 'Mode[387 chars]ate'}
+Diff is 731 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 65 tests in 0.082s
+
+FAILED (failures=1)
+```
+
+2026-10-08 — Mutation check, restored: put both entries back by editing nutrition_rules.json (no git reset; the file is byte-identical to commit 66d10a3) and reran `python3 -m unittest discover -s tests`. Green output (exit 0):
+
+```
+.................................................................
+----------------------------------------------------------------------
+Ran 65 tests in 0.083s
+
+OK
+```
+
+2026-10-08 — User's prediction, recorded verbatim before the real run (program not yet run). Decided by: user.
+
+Before running: I am on my period, so I expect the Menstrual phase, with Iron (evidence: Strong), Vitamin C (Moderate) and Magnesium (Moderate). All three should show a source, none "no supporting source found".
+
+2026-10-08 — Real run, done by the user in their own terminal: `python plan.py --last-period 2026-10-06 --cycle-length 28`. Decided by: user.
+
+Terminal output:
+
+```
+PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+  Iron: lentils [placeholder] (evidence: Strong)
+  Vitamin C: broccoli [placeholder] (evidence: Moderate)
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds [placeholder] (evidence: Moderate)
+```
+
+nutrients.md:
+
+```
+# Nutrients for the Menstrual phase
+
+Generated 2026-10-08 - day 3 of a 28-day cycle.
+
+> **PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.**
+
+| Nutrient | Evidence | Food | Notes |
+| --- | --- | --- | --- |
+| Iron | Strong - Cochrane CD009747 (2016); NHS | lentils [placeholder] |  |
+| Vitamin C | Moderate - EFSA 2014 opinion; Cook & Reddy 2001 | broccoli [placeholder] | chosen over oranges - out of season; swap with --prefer-alternative vitamin c |
+| Magnesium | Moderate - Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020 | pumpkin seeds [placeholder] |  |
+```
+
+2026-10-08 — The real run matched the prediction: Menstrual phase, Iron (Strong), Vitamin C (Moderate), Magnesium (Moderate), all three with a source in nutrients.md. Decided by: user.
+2026-10-08 — Open gap, not yet checked by any test: Ovulatory Fiber is still suggested although EVIDENCE.md says the evidence points against it. Noted by: user; no decision yet.
+2026-10-08 — Open gap, not yet checked by any test: the evidence label does not tell the user that most sources are for the whole cycle or for supplements, not for eating the food in this one phase. Noted by: user; no decision yet.

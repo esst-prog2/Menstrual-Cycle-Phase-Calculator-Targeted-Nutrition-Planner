@@ -76,8 +76,23 @@ If exclusions remove every candidate for a nutrient slot, the system SHALL NOT f
 - **THEN** the system completes the run, shows the other nutrients normally, and marks the emptied slot as having no suitable food
 
 ### Requirement: Placeholder labeling
-Every food suggestion SHALL carry a placeholder label, since `nutrition_rules.json` is not evidence-reviewed. No stub rule SHALL carry an evidence-strength label (Strong/Moderate/Weak/Speculative).
+Every food suggestion SHALL carry a placeholder label, since the foods in `nutrition_rules.json` are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
 
 #### Scenario: Placeholder label present
 - **WHEN** the system suggests any food from the stub database
-- **THEN** that suggestion carries a placeholder label and no evidence-strength label
+- **THEN** that suggestion carries a placeholder label
+
+### Requirement: Evidence tier per nutrient
+Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`; the source SHALL be null exactly when the tier is Speculative. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
+
+#### Scenario: Tier shown with every suggestion
+- **WHEN** the system shows a nutrient, including one whose foods were all excluded
+- **THEN** that nutrient's evidence tier appears in both the terminal output and `nutrients.md`
+
+#### Scenario: Claim without a tier
+- **WHEN** a phase-nutrient claim in `nutrition_rules.json` has no valid tier
+- **THEN** the system exits with an error naming that claim and writes no files
+
+#### Scenario: Counts match the evidence review
+- **WHEN** the stub data is checked against `EVIDENCE.md`
+- **THEN** 7 of the 12 claims have a source (2 Strong, 4 Moderate, 1 Weak) and 5 are Speculative with no source

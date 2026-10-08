@@ -26,11 +26,13 @@ NUTRIENTS_PER_PHASE = 3
 MIN_CANDIDATES = 5
 NO_REPEAT_CYCLES = 2
 HISTORY_ENTRIES = NO_REPEAT_CYCLES + 1   # current cycle plus the 2 before it
-# Only synthetic test fixtures carry evidence labels; stub data never does.
+# Per-food "evidence" labels exist only in synthetic test fixtures; stub foods never carry one.
+# The per-claim tiers in nutrition_rules.json's "evidence" map use the same four names.
 EVIDENCE_RANK = {"Strong": 3, "Moderate": 2, "Weak": 1, "Speculative": 0}
 
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
               "stub database that has not been evidence-reviewed.")
+NO_SOURCE = "no supporting source found"
 REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"
 LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
@@ -173,14 +175,23 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
 # ----------------------------------------------------------------- data I/O
 
 def load_rules(path, warn):
+    """Return (phases, evidence). Every nutrient must have an evidence tier, so no
+    suggestion is ever shown without one; a source is required unless Speculative."""
     data = json.loads(Path(path).read_text())
-    phases = data["phases"]
+    phases, evidence = data["phases"], data.get("evidence", {})
     for phase, nutrients in phases.items():
         for nutrient, candidates in nutrients.items():
+            claim = evidence.get(phase, {}).get(nutrient)
+            if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_RANK:
+                raise InputError(f"{Path(path).name}: {phase}/{nutrient} has no evidence tier "
+                                 f"(expected one of {', '.join(EVIDENCE_RANK)})")
+            if (claim.get("source") is None) != (claim["tier"] == "Speculative"):
+                raise InputError(f"{Path(path).name}: {phase}/{nutrient} is {claim['tier']}, so its "
+                                 "source must be " + ("null" if claim["tier"] == "Speculative" else "named"))
             if len(candidates) < MIN_CANDIDATES:
                 warn(f"Warning: {phase}/{nutrient} has only {len(candidates)} candidate foods "
                      f"(minimum {MIN_CANDIDATES}); rotation may repeat foods sooner.")
-    return phases
+    return phases, evidence
 
 
 def _valid_history(data):
@@ -226,6 +237,7 @@ def save_history(path, history):
 class Suggestion:
     nutrient: str
     resolution: Resolution
+    evidence: dict      # {"tier": ..., "source": ... or None}
 
 
 def plan_slot(nutrient, candidates, entries, cycle_start, exclusions, prefer, season):
@@ -281,13 +293,21 @@ def food_label(suggestion):
     return f"{res.chosen['food']} [placeholder]"
 
 
+def evidence_label(suggestion):
+    return f"evidence: {suggestion.evidence['tier']}"
+
+
+def evidence_detail(suggestion):
+    return f"{suggestion.evidence['tier']} - {suggestion.evidence['source'] or NO_SOURCE}"
+
+
 def render_terminal(day, cycle_length, phase, is_late, suggestions):
     lines = [DISCLAIMER, "", f"Day {day} of your {cycle_length}-day cycle: {phase} phase"]
     if is_late:
         lines.append(f"Note: {LATE_NOTE}")
     lines += ["", "Nutrients that matter now, and a food that contains each:"]
     for s in suggestions:
-        lines.append(f"  {s.nutrient}: {food_label(s)}")
+        lines.append(f"  {s.nutrient}: {food_label(s)} ({evidence_label(s)})")
         lines += [f"    note: {n}" for n in item_notes(s)]
     return "\n".join(lines) + "\n"
 
@@ -298,9 +318,9 @@ def render_markdown(day, cycle_length, phase, is_late, suggestions, today):
              f"> **{DISCLAIMER}**", ""]
     if is_late:
         lines += [f"> Note: {LATE_NOTE}", ""]
-    lines += ["| Nutrient | Food | Notes |", "| --- | --- | --- |"]
+    lines += ["| Nutrient | Evidence | Food | Notes |", "| --- | --- | --- | --- |"]
     for s in suggestions:
-        lines.append(f"| {s.nutrient} | {food_label(s)} | {'; '.join(item_notes(s))} |")
+        lines.append(f"| {s.nutrient} | {evidence_detail(s)} | {food_label(s)} | {'; '.join(item_notes(s))} |")
     return "\n".join(lines) + "\n"
 
 
@@ -330,7 +350,7 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
     try:
         day, is_late = cycle_day(args.last_period, today, args.cycle_length)
         phase = phase_for_day(day, args.cycle_length)
-        rules = load_rules(rules_path or workdir / "nutrition_rules.json", warn)
+        rules, evidence = load_rules(rules_path or workdir / "nutrition_rules.json", warn)
         nutrients = rules[phase]
 
         prefer = None
@@ -357,7 +377,7 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
                                  f"available for {nutrient} this cycle ({exc})")
             if new_entries is not None:
                 phase_history[nutrient] = new_entries
-            suggestions.append(Suggestion(nutrient, res))
+            suggestions.append(Suggestion(nutrient, res, evidence[phase][nutrient]))
     except InputError as exc:
         parser.error(str(exc))
 
