@@ -584,6 +584,10 @@ Specs updated:
 `nutrition_rules.json` is kept and still counts as "recent", but matches nothing. Renaming
 a food in the data therefore resets that food's rotation silently.
 
+*Extended in Review 8:* the same applies one level up. History kept under a **nutrient**
+name that is no longer in the data stays in `history.json` forever and is never read
+again. Renaming a nutrient therefore resets the rotation for all of its foods silently.
+
 **Result.** All 90 tests pass. `openspec validate --specs` passes, 4 of 4.
 
 ## Review 7: things nobody chose
@@ -672,3 +676,92 @@ in PLANNING_LOG.md under 2026-10-14.
 - **D9.** `openspec/config.yaml` now holds only `schema: spec-driven`.
 
 **Result.** All 91 tests pass. `openspec validate --specs` passes, 4 of 4.
+
+## Review 8: the quiet default
+
+**Date:** 2026-10-14
+**Scope:** every place in `plan.py` where a missing or empty value becomes a default:
+`.get(key, default)`, `or` fallbacks, default parameter values and similar.
+
+### What we looked for
+
+For each default: what is it, what does it change downstream, and is a missing value
+really normal there, or is it a bug that should be an error? Defaults already handled in
+Reviews 5–7 were listed only briefly.
+
+### What we found
+
+26 places. Each new finding was confirmed by running it in a throwaway folder.
+
+**New findings:**
+
+| # | Finding |
+|---|---|
+| Q1 | A **missing** `"source"` passed the load check for a Speculative claim (`.get("source") is None`). The renderer then crashed with `KeyError: 'source'`, a traceback. |
+| Q2 | An **empty** source (`""`) passed as "named", and was then shown as "Weak - no supporting source found": a line that contradicts itself. |
+| Q3 | The source's **type** wasn't checked: `123` was shown as "Weak - 123". |
+| Q4 | **Unknown keys** on foods and claims were ignored. That includes a per-food `"evidence"` label, which the spec forbids. |
+| Q5 | `phase_history.get(nutrient, [])`: history kept under a **renamed nutrient** is never read again, and the nutrient's rotation starts over. This is A4 from Review 6, one level up. |
+| Q6 | `main(out=sys.stdout, err=sys.stderr)` bound the streams when the module was loaded, so `contextlib.redirect_stdout` didn't capture the output. |
+
+**Normal, no action.** These defaults all mean "nothing recorded yet" or "nothing
+requested":
+
+- a missing `history.json` → `{}`;
+- `history.get(phase, {})`;
+- `bool(entries)`;
+- an optional `swapped` flag;
+- `--exclude` defaulting to `[]`;
+- no `--prefer-alternative`;
+- `argv=None`;
+- `today or date.today()`;
+- `workdir=HERE`;
+- `keep=None`;
+- the `Resolution` field defaults;
+- `_deciding_reason` returning `None` on a full tie;
+- `or 'none'` in an error message.
+
+**Already covered by Reviews 5–7:**
+
+- The tier lookup and `claim.get("tier")`.
+- The structure checks (`data.get(...)`, `c.get(...)`).
+- The history entry checks.
+- The `None` returned for an unparseable `history.json`.
+- `names.get(...)` for `--prefer-alternative`.
+- The removed `evidence.get(phase, {})` and `rules_path or …`.
+- `res.chosen.get("placeholder") is True`: since Review 6 the flag is always a boolean,
+  so the `.get` default could never be used.
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+- **Q1–Q3, one rule for the source, checked once at load.** `"source"` is required on
+  every claim. It must be `null` for Speculative, and a non-empty string for Weak,
+  Moderate and Strong; a whitespace-only source also counts as empty (Claude's choice).
+  The renderer now uses the checked value directly: `None` means "no supporting source
+  found", with no `or` fallback.
+
+  New test: `test_source_rule`, with 5 cases: missing (Weak and Speculative), empty,
+  blank, and not a string.
+- **Q4, unknown keys are an error.** A food may only have `food`, `categories`, `seasons`
+  and `placeholder` (`FOOD_KEYS`). A claim may only have `tier` and `source`
+  (`CLAIM_KEYS`). Any other key stops the run with an error naming it, which enforces the
+  spec rule "no evidence label on foods".
+
+  New test: `test_unknown_key_on_food_or_claim`.
+- **Q5, known limitation extended.** Review 6's A4 limitation now also covers renamed
+  nutrients.
+- **Q6.** `main(out=None, err=None)` resolves the streams when it is called. New test:
+  `test_main_honours_redirected_stdout_and_stderr`.
+- **Placeholder flag.** It is now read directly (`res.chosen["placeholder"]`).
+
+The nutrient-selection spec is updated: "Evidence tier per nutrient" now states the
+source rule and the allowed claim keys, and "Rules file checked against the code's
+lists" covers unknown food keys.
+
+**New tests fail on the old code.** All 3 new tests fail against the old `plan.py`.
+`test_source_rule` fails in all 5 cases, one of them with the old `KeyError` crash.
+
+**Result.** All 94 tests pass. `openspec validate --specs` passes, 4 of 4.

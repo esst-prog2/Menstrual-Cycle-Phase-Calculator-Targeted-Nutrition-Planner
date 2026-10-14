@@ -36,6 +36,8 @@ HISTORY_ENTRIES = NO_REPEAT_CYCLES + 1   # current cycle plus the 2 before it
 # Tiers for the per-claim "evidence" map in nutrition_rules.json. Foods are not ranked by
 # evidence: no per-food evidence data exists yet.
 EVIDENCE_TIERS = ["Strong", "Moderate", "Weak", "Speculative"]
+FOOD_KEYS = ["food", "categories", "seasons", "placeholder"]
+CLAIM_KEYS = ["tier", "source"]
 
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
               "stub database that has not been evidence-reviewed.")
@@ -240,6 +242,10 @@ def _check_rules_shape(data, name):
                 require(isinstance(c, dict), where, "an object")
                 require(isinstance(c.get("food"), str), f'{where} "food"', "a string")
                 where = f"{phase}/{nutrient}/{c['food']}"
+                unknown = [k for k in c if k not in FOOD_KEYS]
+                if unknown:
+                    raise InputError(f"{name}: {where} has unknown key {', '.join(map(repr, unknown))}; "
+                                     f"only {', '.join(FOOD_KEYS)}")
                 for field in ("categories", "seasons"):
                     require(isinstance(c.get(field), list), f'{where} "{field}"', "a list")
                 require(isinstance(c.get("placeholder"), bool), f'{where} "placeholder"', "true or false")
@@ -271,9 +277,20 @@ def load_rules(path, warn):
             if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_TIERS:
                 raise InputError(f"{name}: {phase}/{nutrient} has no evidence tier "
                                  f"(expected one of {', '.join(EVIDENCE_TIERS)})")
-            if (claim.get("source") is None) != (claim["tier"] == "Speculative"):
-                raise InputError(f"{name}: {phase}/{nutrient} is {claim['tier']}, so its "
-                                 "source must be " + ("null" if claim["tier"] == "Speculative" else "named"))
+            unknown = [k for k in claim if k not in CLAIM_KEYS]
+            if unknown:
+                raise InputError(f"{name}: evidence {phase}/{nutrient} has unknown key "
+                                 f"{', '.join(map(repr, unknown))}; only {', '.join(CLAIM_KEYS)}")
+            # One rule for the source: required; null for Speculative, a non-empty string otherwise.
+            if "source" not in claim:
+                raise InputError(f"{name}: {phase}/{nutrient} has no \"source\" "
+                                 "(use null when the tier is Speculative)")
+            source = claim["source"]
+            if claim["tier"] == "Speculative" and source is not None:
+                raise InputError(f"{name}: {phase}/{nutrient} is Speculative, so its source must be null")
+            if claim["tier"] != "Speculative" and not (isinstance(source, str) and source.strip()):
+                raise InputError(f"{name}: {phase}/{nutrient} is {claim['tier']}, so its source must be "
+                                 "named (a non-empty string)")
             for c in candidates:
                 for field, allowed in (("categories", CATEGORIES), ("seasons", SEASONS)):
                     unknown = [v for v in c[field] if v not in allowed]
@@ -387,7 +404,7 @@ def food_label(suggestion):
     res = suggestion.resolution
     if res.chosen is None:
         return "(none)"
-    label = " [placeholder]" if res.chosen.get("placeholder") is True else ""
+    label = " [placeholder]" if res.chosen["placeholder"] else ""
     return res.chosen["food"] + label
 
 
@@ -396,7 +413,8 @@ def evidence_label(suggestion):
 
 
 def evidence_detail(suggestion):
-    return f"{suggestion.evidence['tier']} - {suggestion.evidence['source'] or NO_SOURCE}"
+    source = suggestion.evidence["source"]          # checked at load: None only for Speculative
+    return f"{suggestion.evidence['tier']} - {NO_SOURCE if source is None else source}"
 
 
 def render_terminal(day, cycle_length, phase, is_late, suggestions):
@@ -438,9 +456,12 @@ def build_parser():
     return parser
 
 
-def main(argv=None, today=None, workdir=HERE, out=sys.stdout, err=sys.stderr):
+def main(argv=None, today=None, workdir=HERE, out=None, err=None):
     parser = build_parser()
     args = parser.parse_args(argv)
+    # Resolved at call time, so a caller's redirect of sys.stdout/sys.stderr is honoured.
+    out = sys.stdout if out is None else out
+    err = sys.stderr if err is None else err
     today = today or date.today()
     workdir = Path(workdir)
     warn = lambda msg: print(msg, file=err)

@@ -114,7 +114,7 @@ A food suggestion SHALL carry a placeholder label exactly when its entry in `nut
 - **THEN** that suggestion carries no placeholder label
 
 ### Requirement: Rules file checked against the code's lists
-When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); a food is not an object with a string `"food"`, a list `"categories"`, a list `"seasons"` and a `"placeholder"` that is `true` or `false`; or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
+When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); a food is not an object with a string `"food"`, a list `"categories"`, a list `"seasons"` and a `"placeholder"` that is `true` or `false`, or has any other key (so no food can carry an evidence label); or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
 
 #### Scenario: Phase missing from the rules file
 - **WHEN** `phases` has no Follicular entry
@@ -129,7 +129,7 @@ When `nutrition_rules.json` loads, the system SHALL check it before writing any 
 - **THEN** the system stops with an error naming the food and the unknown season
 
 ### Requirement: Evidence tier per nutrient
-Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`; the source SHALL be null exactly when the tier is Speculative. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
+Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`. Every claim SHALL have a `"source"` key: `null` when the tier is Speculative, and a non-empty string for Weak, Moderate and Strong. A claim SHALL have no keys other than `"tier"` and `"source"`. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
 
 #### Scenario: Tier shown with every suggestion
 - **WHEN** the system shows a nutrient, including one whose foods were all excluded
@@ -137,6 +137,10 @@ Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tie
 
 #### Scenario: Claim without a tier
 - **WHEN** a phase-nutrient claim in `nutrition_rules.json` has no valid tier
+- **THEN** the system exits with an error naming that claim and writes no files
+
+#### Scenario: Source missing, empty or not a string
+- **WHEN** a claim has no `"source"` key, or a Weak, Moderate or Strong claim has an empty, blank or non-string source
 - **THEN** the system exits with an error naming that claim and writes no files
 
 #### Scenario: Counts match the evidence review

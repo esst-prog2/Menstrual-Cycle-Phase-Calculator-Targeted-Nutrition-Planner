@@ -108,6 +108,18 @@ class Workspace(unittest.TestCase):
 # ------------------------------------------------------------------ 1. setup
 
 class TestSetup(unittest.TestCase):
+    def test_main_honours_redirected_stdout_and_stderr(self):
+        # Review 8: out/err default to the streams current at call time, not at import time.
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Zinc"] = []               # an empty slot, so a warning is printed
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "nutrition_rules.json").write_text(json.dumps(rules), encoding="utf-8")
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                plan.main(list(OVULATORY), today=TODAY, workdir=d)
+        self.assertIn("Day 15 of your 28-day cycle: Ovulatory phase", out.getvalue())
+        self.assertIn("Ovulatory/Zinc has only 0 candidate foods", err.getvalue())
+
     def test_python_older_than_3_10_stops_with_clear_message(self):
         fake_39 = ("import runpy, sys; sys.version_info = (3, 9, 6, 'final', 0); "
                    f"runpy.run_path({str(ROOT / 'plan.py')!r}, run_name='__main__')")
@@ -399,6 +411,36 @@ class TestRulesFileChecks(Workspace):
         err = self.run_error(*OVULATORY, "--prefer-alternative", "zinc")
         self.assertIn("no alternative available for Zinc this cycle "
                       "(there are no foods for this nutrient in the data)", err)
+
+    # Review 8: the evidence source and unknown keys.
+
+    def test_source_rule(self):
+        cases = (("missing", None, 'Ovulatory/Omega-3 has no "source" (use null when the tier is Speculative)'),
+                 ("empty", "", "Ovulatory/Omega-3 is Weak, so its source must be named (a non-empty string)"),
+                 ("blank", "   ", "Ovulatory/Omega-3 is Weak, so its source must be named (a non-empty string)"),
+                 ("not a string", 123, "Ovulatory/Omega-3 is Weak, so its source must be named (a non-empty string)"))
+        for label, value, message in cases:
+            with self.subTest(source=label):
+                rules = real_rules()
+                claim = rules["evidence"]["Ovulatory"]["Omega-3"]
+                if label == "missing":
+                    del claim["source"]
+                else:
+                    claim["source"] = value
+                self.assert_stops(rules, message)
+        with self.subTest(source="missing on a Speculative claim"):
+            rules = real_rules()
+            del rules["evidence"]["Ovulatory"]["Zinc"]["source"]
+            self.assert_stops(rules, 'Ovulatory/Zinc has no "source" (use null when the tier is Speculative)')
+
+    def test_unknown_key_on_food_or_claim(self):
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Omega-3"][0]["evidence"] = "Strong"   # spec: no evidence label on foods
+        self.assert_stops(rules, "Ovulatory/Omega-3/salmon has unknown key 'evidence'; "
+                                 "only food, categories, seasons, placeholder")
+        rules = real_rules()
+        rules["evidence"]["Ovulatory"]["Zinc"]["notes"] = "x"
+        self.assert_stops(rules, "evidence Ovulatory/Zinc has unknown key 'notes'; only tier, source")
 
     def test_files_read_and_written_as_utf8(self):
         # Run plan.py under a Latin-1 locale: without explicit UTF-8, the accented name is garbled.
