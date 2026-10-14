@@ -79,6 +79,10 @@ If two or more valid candidates remain and rank differently, the system SHALL sh
 - **WHEN** `--prefer-alternative zinc` is passed and the Zinc slot has an available alternative
 - **THEN** the alternative is shown instead of the original top-ranked candidate
 
+#### Scenario: Swap note shown while the swap lasts
+- **WHEN** a nutrient's food was swapped with `--prefer-alternative` earlier this cycle and is still allowed
+- **THEN** every later run in the cycle shows the swap note for it, even if the ranking now puts that food first, and the note does not name any other food
+
 #### Scenario: No alternative available for named nutrient
 - **WHEN** `--prefer-alternative` names a nutrient with no alternative available this cycle
 - **THEN** the system prints a clear error and does not swap or guess

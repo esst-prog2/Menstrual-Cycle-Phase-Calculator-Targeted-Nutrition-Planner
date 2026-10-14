@@ -524,6 +524,33 @@ class TestHistory(Workspace):
         self.assertEqual(swapped, later)
         self.assertEqual(len(self.history()["Ovulatory"]["Zinc"]), 1)
 
+    # Review 4: same cycle (last period 2026-11-17), Ovulatory on Nov 29 (autumn) and Dec 1 (winter).
+    SEASON_EDGE = ("--last-period", "2026-11-17", "--cycle-length", "28")
+
+    def use_season_rules(self, slot_a):
+        self.use_rules({p: {"A": slot_a, "B": [food(f"b{i}") for i in range(5)],
+                            "C": [food(f"c{i}") for i in range(5)]} for p in plan.PHASES})
+
+    def test_swap_note_kept_when_ranking_later_agrees(self):
+        self.use_season_rules([food("a1", seasons=["autumn"]), food("a2", seasons=["winter"])])
+        self.run_plan(*self.SEASON_EDGE, "--prefer-alternative", "a", today=date(2026, 11, 29))
+        out, _ = self.run_plan(*self.SEASON_EDGE, today=date(2026, 12, 1))   # a2 now ranks first
+        self.assertIn("A: a2 [placeholder]", out)
+        self.assertIn("    note: swapped in with --prefer-alternative\n", out)
+        self.assertIn("| a2 [placeholder] | swapped in with --prefer-alternative |", self.markdown())
+        self.assertNotIn("chosen over", out)
+
+    def test_swap_note_does_not_name_another_food(self):
+        # Nov 29: a3 out of season, a1 first, swap to a2. Dec 1: a3 ranks first, but the
+        # user never swapped away from it, so the note must not name it.
+        self.use_season_rules([food("a3", seasons=["winter"]), food("a1", seasons=["autumn"]),
+                               food("a2", seasons=["autumn", "winter"])])
+        self.run_plan(*self.SEASON_EDGE, "--prefer-alternative", "a", today=date(2026, 11, 29))
+        out, _ = self.run_plan(*self.SEASON_EDGE, today=date(2026, 12, 1))
+        a_lines = out[out.index("  A: "):out.index("  B: ")]
+        self.assertEqual(a_lines, "  A: a2 [placeholder] (evidence: Speculative)\n"
+                                  "    note: swapped in with --prefer-alternative\n")
+
     def test_new_cycle_after_swap_rotates_normally(self):
         self.ovulatory(1, "--prefer-alternative", "zinc")
         self.ovulatory(0)

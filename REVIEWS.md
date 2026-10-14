@@ -265,3 +265,132 @@ in PLANNING_LOG.md under 2026-10-14.
   names.
 
 **Result.** All 70 tests pass.
+
+## Review 4: patched where it broke, not where it's wrong
+
+**Date:** 2026-10-14
+**Scope:** git history on `main`, `hw4-spike`, `hw5-usable` and `hw6-review`, plus `plan.py`.
+
+### What we looked for
+
+- **Chains of commits that fix the same area again and again.** For each chain: what was
+  the original assumption, what did each fix patch, and can the actual rule now be stated
+  in one sentence that matches the spec?
+- **Special cases stacked on top of each other in the code.**
+
+### What we found
+
+There are 19 commits. Only 4 touch `plan.py`, and there are no "fix:" commits: each round
+of patching was folded into one large commit (`5a077d0`, `de73012`). Git alone can't show
+the chains, so **PLANNING_LOG is the real trail.** It has 9 lines that say "replaces",
+"revised", "corrected" or "retired".
+
+Side note: local `main` was at `de73012`, behind `origin/main` (`dc81853`). Pull it
+before merging.
+
+#### Chain 1: Rotation and the no-repeat rule
+
+- **Original assumption** (README, 2026-09-12): a whole grocery list of K items is drawn
+  from one shared pool per phase, and two lists may share at most N items, with N worked
+  out from P and K.
+- **What each fix patched:**
+  1. N formula decided, plus a "validate P ≥ K" follow-up.
+  2. The formula replaced by a per-slot version (K=1).
+  3. ≥5 candidates per slot; window "2–3", then 2; the P ≥ K follow-up retired.
+  4. History cap raised from 2 to 3 in the build, so recomputing within a cycle still sees
+     both earlier cycles.
+  5. Review 2 (b4): repeat note missing after a swap.
+- **One sentence:** "For each nutrient, never show a food used for that nutrient in either
+  of the previous 2 cycles, unless every allowed candidate was. Then repeat one and say so."
+- **Matches the spec?** Yes: "No-repeat window" plus "Repeat fallback note".
+
+#### Chain 2: Re-runs within the same cycle and `--prefer-alternative`
+
+- **Original assumption** (`tasks.md` 5.2 and the spec): a same-cycle re-run reuses the
+  saved pick unless `--exclude` or `--prefer-alternative` makes it invalid.
+- **What each fix patched:**
+  1. The build implemented reuse only for swaps, by adding the `swapped` field.
+  2. Review 2 (b3): the gap showed up when the season changed.
+  3. Review 2 (b4): the forced-repeat flag had to be passed into each hand-built result.
+- **One sentence:** "Within a cycle, keep the saved pick while its food is still allowed.
+  Otherwise pick again and replace that cycle's entry."
+- **Matches the spec?** Yes. The code was the most stacked part of the repo (special case A).
+
+#### Chain 3: Cycle day and late periods
+
+- **Original assumption** (early `tasks.md` 2.4): the cycle day was worked out with a
+  modulo, so a late date silently wrapped into a new cycle.
+- **What each fix patched:**
+  1. 2026-09-25: day = elapsed + 1, a 7-day grace window, rejection after that.
+  2. Specs, design and proposal revised with `/opsx:update` to match the build.
+- **One sentence:** "Cycle day = days since the last period + 1. Days past the cycle
+  length, up to 6 more, are Luteal and flagged as possibly late; anything later is
+  rejected."
+- **Matches the spec?** Yes. The code split the rule across two functions (special case C).
+
+#### Chain 4: Evidence
+
+- **Original assumption** (README §4 and §7): each rule or food carries an evidence
+  strength, and Strong is protected over Weak when ranking.
+- **What each fix patched:**
+  1. 2026-09-24: no labels on stub foods; Strong-over-Weak tested only with made-up data.
+  2. The build still added per-food ranking code.
+  3. 2026-10-08: per-claim tiers, which "replace" two earlier decisions, but only for the
+     claim.
+  4. Review 2 removed the per-food ranking; the README §7 follow-up updated the docs.
+- **One sentence:** "Evidence belongs to the phase-nutrient claim: it is checked when the
+  rules file loads and shown with every nutrient, and it never affects which food is
+  chosen."
+- **Matches the spec?** Yes. What's left: `EVIDENCE_RANK`'s unused numbers (dead-code
+  review) and the open Ovulatory Fiber gap.
+
+#### Smaller chains
+
+Each one is now one clear rule that matches the spec:
+
+- **Gitignored files:** `history.json` and `.bak` → `nutrients.md` → dated backups.
+- **Category tags:** "one or more" → "may be empty".
+- **Nutrients per phase:** "same 3" → "each phase its own 3" → load-time warning.
+- **Scope:** groceries → nutrients. This also started Chain 1.
+
+#### Special cases stacked in the code
+
+- **A. `plan_slot` had five ways out for one rule.**
+  - The forced-repeat flag was copied into hand-built results in 3 places.
+  - The exclusion filter was a second copy of `resolve_candidates`'s.
+  - Two branches existed only because `_deciding_reason` assumes the winner ranks at
+    least as well as the loser.
+- **B. Two edge cases in the swap note.**
+  - "Instead of X" named whatever ranked first now, which might not be the food swapped
+    away from.
+  - If the ranking later agreed with the swap, no swap note was shown, although history
+    said `swapped: true`.
+- **C. The grace rule was split across two functions.** `cycle_day` used
+  `elapsed >= cycle_length`; `phase_for_day` used `day > cycle_length`.
+- **Not a stack:** `resolve_candidates`'s exits each match one spec requirement.
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+- **A, `plan_slot` rewritten to the one-sentence rule from Chain 2.** It now has one call
+  to `resolve_candidates`, with this cycle's saved pick passed as the new optional `keep`
+  argument, then two plain exits: keep the saved pick, or record the new one.
+  `resolve_candidates` builds a single `Resolution`. The forced-repeat flag is worked out
+  once ("every allowed candidate was used recently"), and the exclusion filter exists only
+  there. The `keep` argument is Claude's design; design.md's signature is updated to match.
+- **C, grace rule in one place.** `is_late(day, cycle_length)` is used by both
+  `cycle_day` and `phase_for_day`. `cycle_day`'s rejection check is now written in terms
+  of the same `day`.
+- **B, swap note simplified.** The note is now "swapped in with --prefer-alternative",
+  with no food named, and it is always shown when history says `swapped: true`. The
+  cli-output and nutrient-selection specs are updated to match. There is a new test for
+  each edge case: `test_swap_note_kept_when_ranking_later_agrees` and
+  `test_swap_note_does_not_name_another_food`. Both fail against the old `plan.py`.
+- **No other behaviour change.** All 70 existing tests pass unchanged, both before and
+  after the rewrite. Old and new `plan.py` were also compared on 7,485 random runs, with
+  random rules, exclusions, swaps and dates. With the swap-note text removed, the terminal
+  output, `nutrients.md` and `history.json` were identical in every run (Claude's check).
+
+**Result.** All 72 tests pass. `openspec validate --specs` passes, 4 of 4.

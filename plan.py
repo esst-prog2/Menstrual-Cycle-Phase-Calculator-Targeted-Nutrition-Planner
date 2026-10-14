@@ -9,7 +9,7 @@ import json
 import re
 import shutil
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 from typing import NamedTuple
@@ -34,6 +34,7 @@ EVIDENCE_RANK = {"Strong": 3, "Moderate": 2, "Weak": 1, "Speculative": 0}
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
               "stub database that has not been evidence-reviewed.")
 NO_SOURCE = "no supporting source found"
+SWAP_NOTE = "swapped in with --prefer-alternative"
 REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"
 LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
@@ -66,17 +67,24 @@ def parse_cycle_length(value):
     return length
 
 
+def is_late(day, cycle_length):
+    """The grace rule: a day past the cycle length (at most GRACE_DAYS past; cycle_day
+    rejects later ones) is in the Luteal phase, and the period may be late."""
+    return day > cycle_length
+
+
 def cycle_day(last_period, today, cycle_length):
     """Return (day, is_late). Day is elapsed + 1, never wrapped into a new cycle."""
     elapsed = (today - last_period).days
+    day = elapsed + 1
     if elapsed < 0:
         raise InputError(f"invalid date: --last-period {last_period.isoformat()} is in the future")
-    if elapsed >= cycle_length + GRACE_DAYS:
+    if day > cycle_length + GRACE_DAYS:
         raise InputError(
             f"--last-period {last_period.isoformat()} is {elapsed} days ago, more than "
             f"{GRACE_DAYS} days past your {cycle_length}-day cycle (the {GRACE_DAYS}-day grace limit). "
             "Please enter the start date of your most recent period.")
-    return elapsed + 1, elapsed >= cycle_length
+    return day, is_late(day, cycle_length)
 
 
 def phase_ranges(cycle_length):
@@ -91,7 +99,7 @@ def phase_ranges(cycle_length):
 
 
 def phase_for_day(day, cycle_length):
-    if day > cycle_length:
+    if is_late(day, cycle_length):
         return "Luteal"
     for phase, (first, last) in phase_ranges(cycle_length).items():
         if first <= day <= last:
@@ -144,11 +152,13 @@ def _deciding_reason(winner, loser, recent_foods, season):
     return None
 
 
-def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative, season):
+def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative, season, keep=None):
     """Pick one food for a nutrient slot. Pure: all data comes in through arguments.
 
     Constraint order: exclusions (hard filter), then no-repeat within recent_foods,
-    then seasonality. Ties keep list order.
+    then seasonality. Ties keep list order. If `keep` names a food that is still
+    allowed, that food is chosen (this cycle's saved pick); a "chosen over" reason is
+    given only when the ranking agrees with it.
     """
     exclusions = set(exclusions)
     recent_foods = set(recent_foods)
@@ -161,18 +171,24 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
     ranked = sorted(valid, key=lambda c: _rank_key(c, recent_foods, season))
     top = ranked[0]
     runner_up = ranked[1] if len(ranked) > 1 else None
-    forced_repeat = all(c["food"] in recent_foods for c in valid)
+    kept = next((c for c in valid if c["food"] == keep), None)
 
+    alternative = reason = None
     if prefer_alternative:
         if runner_up is None:
             raise NoAlternativeError("only one candidate remains")
-        return Resolution(chosen=runner_up, alternative=top, swapped=True, forced_repeat=forced_repeat)
-
-    if runner_up is None:
-        return Resolution(chosen=top, forced_repeat=forced_repeat)
-    reason = _deciding_reason(top, runner_up, recent_foods, season)
-    return Resolution(chosen=top, alternative=runner_up if reason else None,
-                      reason=reason, forced_repeat=forced_repeat)
+        chosen, alternative = runner_up, top
+    elif kept is not None and kept is not top:
+        chosen = kept
+    else:
+        chosen = top
+        if runner_up is not None:
+            reason = _deciding_reason(top, runner_up, recent_foods, season)
+            alternative = runner_up if reason else None
+    # A repeat is forced only when every allowed candidate was used recently.
+    return Resolution(chosen=chosen, alternative=alternative, reason=reason,
+                      forced_repeat=all(c["food"] in recent_foods for c in valid),
+                      swapped=bool(prefer_alternative))
 
 
 # ----------------------------------------------------------------- data I/O
@@ -261,26 +277,15 @@ def plan_slot(nutrient, candidates, entries, cycle_start, exclusions, prefer, se
     previous = entries[1:] if same_cycle else entries
     recent_foods = [e["food"] for e in previous[:NO_REPEAT_CYCLES]]
 
-    if same_cycle and not prefer:
-        # This cycle's saved pick (swapped or not) is reused while the food is still allowed,
-        # even if the ranking would now differ (e.g. the season changed mid-cycle).
-        cached = entries[0]["food"]
-        valid = [c for c in candidates if not set(exclusions) & set(c["categories"])]
-        kept = next((c for c in valid if c["food"] == cached), None)
-        if kept is not None:
-            res = resolve_candidates(candidates, exclusions, recent_foods, False, season)
-            if entries[0].get("swapped"):
-                alternative = res.chosen if res.chosen is not kept else None
-                return Resolution(chosen=kept, alternative=alternative, swapped=True,
-                                  forced_repeat=res.forced_repeat), None
-            if res.chosen is kept:
-                return res, None
-            # The ranking no longer favours the saved pick, so no "chosen over" reason applies.
-            return Resolution(chosen=kept, forced_repeat=res.forced_repeat), None
-
-    res = resolve_candidates(candidates, exclusions, recent_foods, prefer, season)
+    # Within a cycle, keep the saved pick while its food is still allowed.
+    # Otherwise pick again and replace that cycle's entry.
+    saved = entries[0] if same_cycle and not prefer else None
+    res = resolve_candidates(candidates, exclusions, recent_foods, prefer, season,
+                             keep=saved and saved["food"])
     if res.chosen is None:
         return res, None
+    if saved and res.chosen["food"] == saved["food"]:
+        return replace(res, swapped=bool(saved.get("swapped"))), None
     entry = {"cycle_start": cycle_start, "food": res.chosen["food"]}
     if res.swapped:
         entry["swapped"] = True
@@ -294,8 +299,8 @@ def item_notes(suggestion):
     if res.chosen is None:
         return [NO_FOOD_NOTE]
     notes = []
-    if res.swapped and res.alternative is not None:
-        notes.append(f"swapped in with --prefer-alternative, instead of {res.alternative['food']}")
+    if res.swapped:
+        notes.append(SWAP_NOTE)
     elif res.alternative is not None:
         notes.append(f"chosen over {res.alternative['food']} - {res.reason}; swap with "
                      f"--prefer-alternative {suggestion.nutrient.lower()}")

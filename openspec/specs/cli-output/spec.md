@@ -28,7 +28,7 @@ Both the terminal output and `nutrients.md` SHALL start with this disclaimer, ex
 - **THEN** `history.json` and `nutrients.md` are written next to `plan.py`, and nothing is written to the working folder
 
 ### Requirement: Item-level notes appear in both terminal and nutrients.md
-Placeholder labels, repeat-fallback notes, alternative notes, swap notes ("swapped in with --prefer-alternative, instead of <food>"), and "no suitable food" notes SHALL each appear in both the terminal output and `nutrients.md`, since each is a standing fact about a specific suggestion.
+Placeholder labels, repeat-fallback notes, alternative notes, swap notes ("swapped in with --prefer-alternative", without naming the food it replaced), and "no suitable food" notes SHALL each appear in both the terminal output and `nutrients.md`, since each is a standing fact about a specific suggestion.
 
 #### Scenario: Each note type appears in both places
 - **WHEN** any of a placeholder label, a repeat-fallback note, an alternative note, a swap note, or a no-suitable-food note applies to a nutrient this run
