@@ -34,7 +34,7 @@ At most 3 entries per phase/nutrient, most recent first: the current cycle plus 
 
 **`nutrition_rules.json` gets a load-time candidate-count check, as a warning, not a gate.** When the file loads, the tool checks every phase/nutrient slot against the ≥5-candidate minimum (`rotation-history`'s "Candidate pool minimum" requirement) and prints a terminal warning for any slot below it — but still runs. This catches an under-populated stub slot early, without blocking the tool over the rest of the phases if only one slot is thin. Alternative considered: hard-reject at load time — rejected as disproportionate for a slot count problem that only degrades rotation quality for that one nutrient, not correctness elsewhere.
 
-**Note wording is templated, with one dynamic field.** Placeholder and repeat notes are fixed strings. The alternative note is `chosen over <alt> — <reason>; swap with --prefer-alternative <nutrient>`, where `<reason>` is generated from whichever constraint actually decided the pair (e.g. "in season, but repeats a recent pick" vs. "out of season") — never a hardcoded phrase, since the deciding constraint varies per case.
+**Note wording is templated, with one dynamic field.** Placeholder and repeat notes are fixed strings. The alternative note is `chosen over <alt> - <reason>; swap with --prefer-alternative <nutrient>`, where `<reason>` is generated from whichever constraint actually decided the pair (e.g. "in season, but repeats a recent pick" vs. "out of season") — never a hardcoded phrase, since the deciding constraint varies per case.
 
 ## Risks / Trade-offs
 

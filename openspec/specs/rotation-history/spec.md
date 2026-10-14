@@ -7,11 +7,15 @@ Tracks, per phase and nutrient, which foods were suggested in recent cycles so t
 ## Requirements
 
 ### Requirement: Candidate pool minimum
-Each phase/nutrient slot's stub candidate pool SHALL contain at least 5 foods — enough to support the 2-cycle no-repeat window even after some candidates are filtered out (3 distinct candidates are the minimum the window itself requires).
+Each phase/nutrient slot's stub candidate pool SHOULD contain at least 5 foods — enough to support the 2-cycle no-repeat window even after some candidates are filtered out (3 distinct candidates are the minimum the window itself requires). A slot with fewer than 5 candidates SHALL produce a terminal warning when `nutrition_rules.json` loads, not a failure: the tool still runs.
 
 #### Scenario: Slot has enough candidates to rotate
 - **WHEN** a nutrient slot has 5 stub candidates and 1 is removed by an exclusion
 - **THEN** 4 remain, still enough to avoid repeating either of the last 2 cycles' picks
+
+#### Scenario: Slot below the minimum
+- **WHEN** a slot in `nutrition_rules.json` has fewer than 5 candidates
+- **THEN** the system prints a terminal warning naming the slot and the minimum of 5, and still runs
 
 ### Requirement: No-repeat window
 A food SHALL NOT be suggested for the same nutrient in either of the previous 2 cycles, unless that nutrient's candidate pool does not have enough distinct valid options, in which case the system falls back to repeating.
@@ -31,6 +35,10 @@ When a repeat cannot be avoided, the system SHALL show a note next to that item 
 - **WHEN** a nutrient's shown food repeats one from the last 2 cycles because no alternative was available
 - **THEN** a note to that effect is shown for that item
 
+#### Scenario: Fallback note after a swap
+- **WHEN** every valid candidate was used in the last 2 cycles and `--prefer-alternative` swaps the nutrient's food, on this run or earlier in the cycle
+- **THEN** the repeat note is shown for that item as well as the swap note
+
 ### Requirement: history.json structure
 History SHALL be recorded per phase and nutrient, with each entry tagged by the `--last-period` value of the cycle it belongs to. At most 3 entries SHALL be retained per slot — the current cycle plus the 2 before it — so the 2-cycle no-repeat window stays complete even when the current cycle's pick is recomputed. An entry chosen with `--prefer-alternative` SHALL additionally carry `"swapped": true`, so a later same-cycle re-run keeps the swap.
 
@@ -44,6 +52,10 @@ History SHALL be recorded per phase and nutrient, with each entry tagged by the 
 
 ### Requirement: Same-cycle re-run reuses the cached pick
 A run whose `--last-period` matches the most recently recorded cycle for a phase/nutrient slot SHALL reuse that cycle's cached pick without advancing the rotation window, unless `--exclude` or `--prefer-alternative` invalidates the cached pick — in which case that cycle's entry SHALL be recomputed and updated in place, not treated as a new rotation event.
+
+#### Scenario: Re-run after the season changes
+- **WHEN** a same-cycle re-run falls in a different season, so a fresh ranking would pick another food
+- **THEN** the saved pick is still shown, and its history entry is unchanged
 
 #### Scenario: Identical re-run
 - **WHEN** the tool is run twice with the same `--last-period`, `--cycle-length`, and `--exclude` values, within the same phase
@@ -65,11 +77,15 @@ A missing `history.json` SHALL be treated as normal on first run: the system pro
 - **THEN** the system runs normally with empty history and writes a new `history.json`
 
 ### Requirement: Corrupt history.json
-A `history.json` that exists but cannot be parsed SHALL be backed up to `history.json.bak`, then treated as empty. The system SHALL print a warning in the terminal only (not in `nutrients.md`) and SHALL NOT crash.
+A `history.json` that exists but cannot be parsed SHALL be backed up to `history.json.<YYYY-MM-DD>.bak` (today's date), then treated as empty. An existing backup SHALL never be overwritten: if that name is taken, the system adds `-2`, `-3`, … after the date. The system SHALL print a warning in the terminal only (not in `nutrients.md`) and SHALL NOT crash.
 
 #### Scenario: Unparseable history file
 - **WHEN** `history.json` exists but is not valid JSON in the expected shape
-- **THEN** the system copies it to `history.json.bak`, proceeds with empty history, prints a terminal warning, and completes the run
+- **THEN** the system copies it to `history.json.<YYYY-MM-DD>.bak`, proceeds with empty history, prints a terminal warning, and completes the run
+
+#### Scenario: Second corruption keeps the earlier backup
+- **WHEN** `history.json` is corrupt again after an earlier backup was made, on another day or the same day
+- **THEN** a new backup file is written and every earlier backup is left unchanged
 
 ### Requirement: 21-day cycle does not break rotation
 The system SHALL run to completion for a 21-day cycle, including its zero-day Follicular phase, without error.

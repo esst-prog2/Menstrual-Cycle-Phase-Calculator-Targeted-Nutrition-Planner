@@ -254,18 +254,15 @@ class TestEvidenceTiers(unittest.TestCase):
 # ------------------------------------------------- 4. candidate resolution
 
 class TestResolveCandidates(unittest.TestCase):
-    def test_strong_evidence_outranks_new_and_in_season(self):
-        # Constraint #2 tie-break, synthetic fixtures only.
-        cands = [food("weak-new", evidence="Weak"),
-                 food("strong-old", seasons=["summer"], evidence="Strong")]
-        res = plan.resolve_candidates(cands, [], ["strong-old"], False, "autumn")
-        self.assertEqual(res.chosen["food"], "strong-old")
-        self.assertEqual(res.alternative["food"], "weak-new")
-        self.assertIn("weaker evidence", res.reason)
-        self.assertFalse(res.forced_repeat)
+    def test_food_evidence_label_does_not_change_ranking(self):
+        # Review 2: foods are not ranked by evidence until real per-food data exists.
+        cands = [food("plain"), food("labelled", evidence="Strong")]
+        res = plan.resolve_candidates(cands, [], [], False, "autumn")
+        self.assertEqual(res.chosen["food"], "plain")
+        self.assertIsNone(res.reason)
 
     def test_excluded_food_never_returned_even_when_top_ranked(self):
-        cands = [food("yogurt", ["dairy"], evidence="Strong"), food("kale", seasons=["summer"])]
+        cands = [food("yogurt", ["dairy"]), food("kale", seasons=["summer"])]
         res = plan.resolve_candidates(cands, ["dairy"], ["kale"], False, "autumn")
         self.assertEqual(res.chosen["food"], "kale")
         self.assertIsNone(res.alternative)
@@ -326,6 +323,11 @@ class TestResolveCandidates(unittest.TestCase):
         res = plan.resolve_candidates([food("a"), food("b")], [], ["a", "b"], False, "autumn")
         self.assertTrue(res.forced_repeat)
 
+    def test_forced_repeat_flagged_after_swap(self):
+        res = plan.resolve_candidates([food("a"), food("b")], [], ["a", "b"], True, "autumn")
+        self.assertEqual(res.chosen["food"], "b")
+        self.assertTrue(res.forced_repeat)
+
     def test_is_pure(self):
         cands = [food("a", seasons=["summer"]), food("b")]
         snapshot = json.dumps(cands)
@@ -368,6 +370,14 @@ class TestSelectionEndToEnd(Workspace):
         self.assertIn("c1", out)
         self.assertIn(plan.NO_FOOD_NOTE, self.markdown())
 
+    def test_wrong_nutrient_count_warns_but_runs(self):
+        self.use_rules({p: {"A": [food(f"a{i}") for i in range(5)],
+                            "B": [food(f"b{i}") for i in range(5)]} for p in plan.PHASES})
+        out, err = self.run_plan(*self.OVULATORY)
+        self.assertIn("Ovulatory has 2 nutrients (expected 3)", err)
+        self.assertIn("a0", out)
+        self.assertNotIn("expected 3", self.markdown())
+
     def test_thin_slot_warns_but_runs(self):
         self.use_rules({p: {"A": [food("a1"), food("a2")], "B": [food(f"b{i}") for i in range(5)],
                             "C": [food(f"c{i}") for i in range(5)]} for p in plan.PHASES})
@@ -391,7 +401,7 @@ class TestHistory(Workspace):
         data = {"Luteal": {"Calcium": [{"cycle_start": "2026-09-01", "food": "kale"},
                                        {"cycle_start": "2026-08-04", "food": "yogurt"}]}}
         plan.save_history(path, data)
-        self.assertEqual(plan.load_history(path, lambda m: self.fail(m)), data)
+        self.assertEqual(plan.load_history(path, lambda m: self.fail(m), TODAY), data)
 
     def test_missing_history_is_created_without_error(self):
         _, err = self.ovulatory()
@@ -404,6 +414,18 @@ class TestHistory(Workspace):
         second, _ = self.ovulatory()
         self.assertEqual(first, second)
         self.assertEqual(before, (self.dir / "history.json").read_text())
+
+    def test_same_cycle_rerun_keeps_pick_when_season_changes(self):
+        # Day 14 on Nov 30 (autumn) and day 15 on Dec 1 (winter), both Ovulatory.
+        # Fiber: raspberries (summer), pears (autumn), oats (all year) -> pears in autumn;
+        # a fresh ranking in winter would pick oats, but the saved pick must be reused.
+        args = ("--last-period", "2026-11-17", "--cycle-length", "28")
+        first, _ = self.run_plan(*args, today=date(2026, 11, 30))
+        self.assertIn("Fiber: pears [placeholder]", first)
+        second, _ = self.run_plan(*args, today=date(2026, 12, 1))
+        self.assertIn("Fiber: pears [placeholder]", second)
+        self.assertEqual(self.history()["Ovulatory"]["Fiber"],
+                         [{"cycle_start": "2026-11-17", "food": "pears"}])
 
     def test_rerun_with_new_exclusion_updates_in_place(self):
         self.ovulatory()
@@ -454,10 +476,22 @@ class TestHistory(Workspace):
         self.assertIn(plan.REPEAT_NOTE, self.markdown())
         self.assertEqual(out.count(plan.REPEAT_NOTE), 1)       # only slot A
 
+    def test_forced_repeat_note_after_swap_in_both_outputs(self):
+        self.use_rules({p: {"A": [food("a1"), food("a2")], "B": [food(f"b{i}") for i in range(5)],
+                            "C": [food(f"c{i}") for i in range(5)]} for p in plan.PHASES})
+        self.ovulatory(2)                                      # a1
+        self.ovulatory(1)                                      # a2
+        out, _ = self.ovulatory(0, "--prefer-alternative", "a")
+        self.assertIn("A: a2 [placeholder]", out)              # a1 ranks first, so the swap shows a2
+        self.assertEqual(out.count(plan.REPEAT_NOTE), 1)
+        self.assertIn(plan.REPEAT_NOTE, self.markdown())
+        later, _ = self.ovulatory()                            # the kept swap is still a repeat
+        self.assertEqual(later.count(plan.REPEAT_NOTE), 1)
+
     def test_corrupt_history_backed_up_and_reset(self):
         (self.dir / "history.json").write_text("{not json")
         out, err = self.ovulatory()
-        self.assertEqual((self.dir / "history.json.bak").read_text(), "{not json")
+        self.assertEqual((self.dir / "history.json.2026-09-25.bak").read_text(), "{not json")
         self.assertIn("could not be read", err)
         self.assertNotIn("could not be read", out)
         self.assertNotIn("history", self.markdown().lower())
@@ -467,7 +501,18 @@ class TestHistory(Workspace):
         (self.dir / "history.json").write_text('{"Ovulatory": ["salmon"]}')
         _, err = self.ovulatory()
         self.assertIn("could not be read", err)
-        self.assertTrue((self.dir / "history.json.bak").exists())
+        self.assertTrue((self.dir / "history.json.2026-09-25.bak").exists())
+
+    def test_second_corruption_keeps_earlier_backups(self):
+        (self.dir / "history.json").write_text("first")
+        self.ovulatory(1)                                      # 2026-08-28
+        (self.dir / "history.json").write_text("second")
+        self.ovulatory()                                       # 2026-09-25
+        (self.dir / "history.json").write_text("third")
+        self.ovulatory()                                       # same day again
+        self.assertEqual((self.dir / "history.json.2026-08-28.bak").read_text(), "first")
+        self.assertEqual((self.dir / "history.json.2026-09-25.bak").read_text(), "second")
+        self.assertEqual((self.dir / "history.json.2026-09-25-2.bak").read_text(), "third")
 
     def test_prefer_alternative_persists_for_the_cycle(self):
         swapped, _ = self.ovulatory(0, "--prefer-alternative", "zinc")
@@ -572,7 +617,8 @@ class TestOutput(Workspace):
 
 class TestGitignore(Workspace):
     def test_history_files_ignored(self):
-        for name in ("history.json", "history.json.bak", "nutrients.md"):
+        for name in ("history.json", "history.json.bak", "history.json.2026-09-25.bak",
+                     "history.json.2026-09-25-2.bak", "nutrients.md"):
             result = subprocess.run(["git", "check-ignore", name], cwd=ROOT,
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, name)

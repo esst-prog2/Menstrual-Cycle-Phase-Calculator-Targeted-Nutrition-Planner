@@ -26,8 +26,8 @@ NUTRIENTS_PER_PHASE = 3
 MIN_CANDIDATES = 5
 NO_REPEAT_CYCLES = 2
 HISTORY_ENTRIES = NO_REPEAT_CYCLES + 1   # current cycle plus the 2 before it
-# Per-food "evidence" labels exist only in synthetic test fixtures; stub foods never carry one.
-# The per-claim tiers in nutrition_rules.json's "evidence" map use the same four names.
+# Tiers for the per-claim "evidence" map in nutrition_rules.json. Foods are not ranked by
+# evidence: no per-food evidence data exists yet.
 EVIDENCE_RANK = {"Strong": 3, "Moderate": 2, "Weak": 1, "Speculative": 0}
 
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
@@ -120,8 +120,7 @@ class NoAlternativeError(Exception):
 
 
 def _rank_key(candidate, recent_foods, season):
-    return (-EVIDENCE_RANK.get(candidate.get("evidence"), 0),
-            candidate["food"] in recent_foods,
+    return (candidate["food"] in recent_foods,
             season not in candidate["seasons"])
 
 
@@ -130,12 +129,10 @@ def _deciding_reason(winner, loser, recent_foods, season):
     win_key = _rank_key(winner, recent_foods, season)
     lose_key = _rank_key(loser, recent_foods, season)
     if win_key[0] != lose_key[0]:
-        return f"weaker evidence ({loser.get('evidence', 'unlabelled')})"
-    if win_key[1] != lose_key[1]:
-        if not lose_key[2] and win_key[2]:
+        if not lose_key[1] and win_key[1]:
             return "in season, but repeats a recent pick"
         return "repeats a recent pick"
-    if win_key[2] != lose_key[2]:
+    if win_key[1] != lose_key[1]:
         return "out of season"
     return None
 
@@ -143,9 +140,8 @@ def _deciding_reason(winner, loser, recent_foods, season):
 def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative, season):
     """Pick one food for a nutrient slot. Pure: all data comes in through arguments.
 
-    Constraint order: exclusions (hard filter), then nutrient coverage (evidence
-    strength), then no-repeat within recent_foods, then seasonality. Ties keep
-    list order.
+    Constraint order: exclusions (hard filter), then no-repeat within recent_foods,
+    then seasonality. Ties keep list order.
     """
     exclusions = set(exclusions)
     recent_foods = set(recent_foods)
@@ -158,13 +154,13 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
     ranked = sorted(valid, key=lambda c: _rank_key(c, recent_foods, season))
     top = ranked[0]
     runner_up = ranked[1] if len(ranked) > 1 else None
+    forced_repeat = all(c["food"] in recent_foods for c in valid)
 
     if prefer_alternative:
         if runner_up is None:
             raise NoAlternativeError("only one candidate remains")
-        return Resolution(chosen=runner_up, alternative=top, swapped=True)
+        return Resolution(chosen=runner_up, alternative=top, swapped=True, forced_repeat=forced_repeat)
 
-    forced_repeat = all(c["food"] in recent_foods for c in valid)
     if runner_up is None:
         return Resolution(chosen=top, forced_repeat=forced_repeat)
     reason = _deciding_reason(top, runner_up, recent_foods, season)
@@ -180,6 +176,9 @@ def load_rules(path, warn):
     data = json.loads(Path(path).read_text())
     phases, evidence = data["phases"], data.get("evidence", {})
     for phase, nutrients in phases.items():
+        if len(nutrients) != NUTRIENTS_PER_PHASE:
+            warn(f"Warning: {phase} has {len(nutrients)} nutrients "
+                 f"(expected {NUTRIENTS_PER_PHASE}).")
         for nutrient, candidates in nutrients.items():
             claim = evidence.get(phase, {}).get(nutrient)
             if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_RANK:
@@ -210,7 +209,7 @@ def _valid_history(data):
     return True
 
 
-def load_history(path, warn):
+def load_history(path, warn, today):
     path = Path(path)
     if not path.exists():
         return {}
@@ -220,7 +219,12 @@ def load_history(path, warn):
         data = None
     if data is not None and _valid_history(data):
         return data
-    backup = path.with_name(path.name + ".bak")
+    # Dated, and never overwrites an earlier backup: history.json.YYYY-MM-DD[-N].bak
+    backup = path.with_name(f"{path.name}.{today.isoformat()}.bak")
+    n = 2
+    while backup.exists():
+        backup = path.with_name(f"{path.name}.{today.isoformat()}-{n}.bak")
+        n += 1
     shutil.copyfile(path, backup)
     warn(f"Warning: {path.name} could not be read, so it was backed up to {backup.name} "
          "and history starts fresh this run.")
@@ -250,15 +254,22 @@ def plan_slot(nutrient, candidates, entries, cycle_start, exclusions, prefer, se
     previous = entries[1:] if same_cycle else entries
     recent_foods = [e["food"] for e in previous[:NO_REPEAT_CYCLES]]
 
-    if same_cycle and not prefer and entries[0].get("swapped"):
-        # A swap made earlier this cycle persists while the food is still allowed.
+    if same_cycle and not prefer:
+        # This cycle's saved pick (swapped or not) is reused while the food is still allowed,
+        # even if the ranking would now differ (e.g. the season changed mid-cycle).
         cached = entries[0]["food"]
         valid = [c for c in candidates if not set(exclusions) & set(c["categories"])]
         kept = next((c for c in valid if c["food"] == cached), None)
         if kept is not None:
-            top = resolve_candidates(candidates, exclusions, recent_foods, False, season).chosen
-            alternative = top if top is not kept else None
-            return Resolution(chosen=kept, alternative=alternative, swapped=True), None
+            res = resolve_candidates(candidates, exclusions, recent_foods, False, season)
+            if entries[0].get("swapped"):
+                alternative = res.chosen if res.chosen is not kept else None
+                return Resolution(chosen=kept, alternative=alternative, swapped=True,
+                                  forced_repeat=res.forced_repeat), None
+            if res.chosen is kept:
+                return res, None
+            # The ranking no longer favours the saved pick, so no "chosen over" reason applies.
+            return Resolution(chosen=kept, forced_repeat=res.forced_repeat), None
 
     res = resolve_candidates(candidates, exclusions, recent_foods, prefer, season)
     if res.chosen is None:
@@ -362,7 +373,7 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
                                  f"{phase} phase (tracked: {', '.join(nutrients)})")
 
         history_path = workdir / "history.json"
-        history = load_history(history_path, warn)
+        history = load_history(history_path, warn, today)
         cycle_start = args.last_period.isoformat()
         season = season_for(today.month)
 

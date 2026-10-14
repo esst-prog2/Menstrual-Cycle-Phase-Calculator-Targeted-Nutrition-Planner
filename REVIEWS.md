@@ -100,3 +100,103 @@ code's own constants. To pick up in later reviews:
 - `NUTRIENTS_PER_PHASE` is defined but never used in `plan.py` (dead-code review).
 - No test checks that `MIN_CANDIDATES` triggers the thin-slot warning at exactly 5.
 - No test checks that `--exclude` rejects a category outside the 11.
+
+## Review 2: spec drift
+
+**Date:** 2026-10-14
+**Scope:** `plan.py` compared with the four specs in `openspec/specs/`, plus the two items
+deferred from Review 1 (the per-food evidence ranking and `NUTRIENTS_PER_PHASE`).
+
+### What we looked for
+
+- **(a)** Things the code does that no spec requirement describes.
+- **(b)** Spec requirements the code doesn't implement, or implements differently.
+
+Each "differs from spec" item was confirmed by running it in a throwaway folder.
+
+### What we found
+
+**(a) In the code, not in any spec**
+
+| # | Finding |
+|---|---|
+| a1 | Foods were ranked first by a per-food `evidence` label. The spec forbids that label on stub foods, so the step never did anything with the real data. If someone added the label, it changed the ranking silently (confirmed: flaxseeds beat salmon). It also produced a confusing `weaker evidence (unlabelled)` note. |
+| a2 | `NUTRIENTS_PER_PHASE` was defined but never used. |
+| a3 | The season is the Northern Hemisphere meteorological season from today's month. The rule existed only in PLANNING_LOG. |
+| a4 | The disclaimer banner in both outputs. The spec only asked for a `[placeholder]` label on each food. |
+| a5 | A fifth note type, "swapped in with --prefer-alternative, instead of X". The spec listed four. |
+| a6 | A swapped food that is later excluded is worked out again, and the swap is dropped. |
+| a7 | An error when `--prefer-alternative` names a nutrient not tracked in this phase. |
+| a8 | `--exclude` matches categories regardless of capital letters. |
+| a9 | Two wordings of the repeat reason. Already covered by design.md; no action needed. |
+
+**(b) In the spec, missing or different in the code**
+
+| # | Finding |
+|---|---|
+| b1 | Constraint 2, "nutrient coverage", did nothing with the real data (the same problem as a1). |
+| b2 | "Exactly 3 nutrients per phase" wasn't checked by the code. A rules file with 2 nutrients ran silently. |
+| b3 | A same-cycle re-run worked out the pick again instead of reusing the saved one. Confirmed: on Nov 30 Fiber was pears; on Dec 1 (winter) it became oats, and the history entry was overwritten. |
+| b4 | After a swap, a forced repeat got no repeat note. |
+| b5 | The spec said a slot "SHALL contain at least 5" candidates. The code warns, as decided on 2026-09-25, so the spec was out of date. |
+| b6 | A second corrupt history file overwrote the first `history.json.bak`. |
+| b7 | design.md wrote the alternative note with an em dash; the code and tests use a hyphen. |
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+**Fixed in code, each with a new test.** Every new test fails against the old `plan.py`.
+
+| Finding | Change | New test |
+|---|---|---|
+| b3 | `plan_slot` now reuses this cycle's saved pick, swapped or not, while the food is still allowed. | `test_same_cycle_rerun_keeps_pick_when_season_changes` |
+| b4 | `resolve_candidates` sets `forced_repeat` on the swap path, and a kept swap carries the flag too. | `test_forced_repeat_flagged_after_swap` and `test_forced_repeat_note_after_swap_in_both_outputs` |
+| b6 | Backups are named `history.json.YYYY-MM-DD.bak`, and never overwrite an earlier one (`-2`, `-3`, … on the same day). `.gitignore` now uses `history.json*.bak`. | `test_second_corruption_keeps_earlier_backups` |
+
+The backup name format is Claude's decision.
+
+When a reused saved pick would no longer rank first, it is shown with no "chosen over"
+note. That is Claude's decision.
+
+**a1/b1, evidence ranking removed.** We removed the per-food evidence ranking, its test and
+the `weaker evidence` note. Within a slot, the ranking is now no repeat, then season. The
+nutrient-selection spec is updated to match. Logged as future work, the user's idea: once
+real per-food data exists, rank foods by evidence or by how rich they are in the nutrient.
+In place of the removed test, `test_food_evidence_label_does_not_change_ranking` guards the
+removal (Claude's decision).
+
+**a2/b2, nutrient-count warning.** `load_rules` now warns in the terminal if a phase
+doesn't have exactly `NUTRIENTS_PER_PHASE` (3) nutrients, and keeps running. New test:
+`test_wrong_nutrient_count_warns_but_runs`.
+
+**b5.** The rotation-history spec now says fewer than 5 candidates gives a warning, not a
+failure.
+
+**b7.** design.md now uses the plain hyphen.
+
+**a3–a8, added to the specs.** The code is unchanged; the specs now describe it.
+
+| Spec | Added |
+|---|---|
+| nutrient-selection | How the season is decided; what happens when a swapped food is later excluded |
+| cli-output | The disclaimer, with its exact wording; the swap note; case-insensitive matching; the error for a nutrient not tracked this phase |
+| rotation-history | The repeat note after a swap; the season-change re-run; dated backups |
+| cli-output (`.gitignore` requirement) | Dated backup names |
+
+`openspec validate --specs` passes, 4 of 4.
+
+**Planning log.** Besides the Review 2 decisions, a line from just before this review
+records the disclaimer wording as the user's decision. Review 1 had found it was never
+logged.
+
+**Result.** All 70 tests pass (65 before; 1 removed, 6 added).
+
+**Left open:**
+
+- README.md §7 "Constraint priorities" still lists nutrient coverage, with Strong evidence
+  protected over Weak. It now disagrees with the spec and the code. It was not changed in
+  this review.
+- `EVIDENCE_RANK` is now used only for its tier names; its numeric ranks are unused. For
+  the dead-code review.

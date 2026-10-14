@@ -13,6 +13,10 @@ Each of the four phases SHALL track exactly 3 nutrients, the same number in ever
 - **WHEN** the system generates suggestions for any phase
 - **THEN** exactly 3 nutrients are shown for that phase
 
+#### Scenario: Wrong nutrient count in the rules file
+- **WHEN** `nutrition_rules.json` gives a phase more or fewer than 3 nutrients
+- **THEN** the system prints a terminal warning naming that phase and the expected count of 3, and still runs, showing the nutrients the file has
+
 ### Requirement: Category tags for exclusion matching
 Every stub food entry SHALL carry a list of category tags drawn only from the fixed set: `dairy`, `eggs`, `gluten`, `nuts`, `peanuts`, `soy`, `fish`, `shellfish`, `sesame`, `meat`, `pork` — covering common allergens and foods avoided for diet or religious reasons. The list MAY be empty when no category applies (e.g. spinach: `[]`); a food with no tags is never removed by `--exclude`. A food MAY carry several tags; a pork food SHALL carry both `meat` and `pork`. Excluding a single food by name is not supported in v1 — category is the only exclusion mechanism.
 
@@ -29,15 +33,26 @@ Every stub food entry SHALL carry a list of category tags drawn only from the fi
 - **THEN** it carries both the `meat` and `pork` tags, so excluding either one matches it correctly
 
 ### Requirement: Constraint priority order
-Candidates for a nutrient slot SHALL be filtered and ranked in this order: (1) exclusions — hard, never violated; (2) nutrient coverage — highest-priority soft constraint; (3) no-repeat-within-2-cycles — soft; (4) seasonality — soft, lowest priority.
+Candidates for a nutrient slot SHALL be filtered and ranked in this order: (1) exclusions — hard, never violated; (2) no-repeat-within-2-cycles — soft; (3) seasonality — soft, lowest priority. Candidates that rank equally keep their order in `nutrition_rules.json`. Foods SHALL NOT be ranked by evidence or nutrient content, since the stub data has no per-food evidence; that is future work once real per-food data exists.
 
 #### Scenario: Excluded food never shown
 - **WHEN** a food matches an active `--exclude` value
 - **THEN** it is never shown for any nutrient slot, regardless of how well it would otherwise rank
 
+#### Scenario: A food-level evidence label does not affect ranking
+- **WHEN** a candidate carries an `evidence` field
+- **THEN** it is ranked the same as if the field were absent
+
 #### Scenario: No-repeat outranks seasonality
 - **WHEN** one candidate is in-season but repeats a recent pick, and another is out-of-season but new
 - **THEN** the out-of-season-but-new candidate is chosen, and the in-season-but-repeating candidate is shown as the alternative
+
+### Requirement: Season is derived from today's month
+The current season used for ranking SHALL be the Northern Hemisphere meteorological season of today's date: winter is December–February, spring March–May, summer June–August, autumn September–November.
+
+#### Scenario: Season boundary
+- **WHEN** the tool runs on 30 November and again on 1 December
+- **THEN** the first run uses autumn and the second uses winter
 
 ### Requirement: Single-candidate slot has no alternative note
 If exactly one valid candidate remains for a nutrient slot after filtering, it SHALL be used directly with no alternative note.
@@ -67,6 +82,10 @@ If two or more valid candidates remain and rank differently, the system SHALL sh
 #### Scenario: No alternative available for named nutrient
 - **WHEN** `--prefer-alternative` names a nutrient with no alternative available this cycle
 - **THEN** the system prints a clear error and does not swap or guess
+
+#### Scenario: Swapped food later excluded
+- **WHEN** a food swapped in earlier this cycle is removed by an `--exclude` on a later same-cycle run
+- **THEN** that nutrient's pick is recomputed under the exclusion, and the swap no longer applies
 
 ### Requirement: Empty candidate pool after exclusions
 If exclusions remove every candidate for a nutrient slot, the system SHALL NOT fail; it SHALL continue processing the other nutrients and mark that slot as having no suitable food.
