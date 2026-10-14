@@ -20,6 +20,13 @@ Both the terminal output and `nutrients.md` SHALL start with this disclaimer, ex
 - **WHEN** the system completes a run
 - **THEN** the terminal output and `nutrients.md` each contain the disclaimer exactly once
 
+### Requirement: Files live next to the script
+`nutrition_rules.json` SHALL be read from, and `history.json`, its backups and `nutrients.md` SHALL be written to, the folder that contains `plan.py`, whatever folder the tool is run from.
+
+#### Scenario: Run from another folder
+- **WHEN** the tool is run as `python path/to/plan.py ...` from a different working folder
+- **THEN** `history.json` and `nutrients.md` are written next to `plan.py`, and nothing is written to the working folder
+
 ### Requirement: Item-level notes appear in both terminal and nutrients.md
 Placeholder labels, repeat-fallback notes, alternative notes, swap notes ("swapped in with --prefer-alternative, instead of <food>"), and "no suitable food" notes SHALL each appear in both the terminal output and `nutrients.md`, since each is a standing fact about a specific suggestion.
 

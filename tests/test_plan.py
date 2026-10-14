@@ -561,7 +561,7 @@ class TestOutput(Workspace):
                 line = next(l for l in out.splitlines() if l.startswith(f"  {nutrient}: "))
                 self.assertTrue(line.endswith(f"(evidence: {claim['tier']})"), line)
                 row = next(l for l in md.splitlines() if l.startswith(f"| {nutrient} |"))
-                self.assertIn(f"| {claim['tier']} - {claim['source'] or plan.NO_SOURCE} |", row)
+                self.assertIn(f"| {claim['tier']} - {claim['source'] or 'no supporting source found'} |", row)
 
     def test_tier_shown_even_when_every_food_is_excluded(self):
         self.use_rules({p: {"A": [food("a1", ["fish"])], "B": [food("b1")], "C": [food("c1")]}

@@ -195,8 +195,73 @@ logged.
 
 **Left open:**
 
-- README.md §7 "Constraint priorities" still lists nutrient coverage, with Strong evidence
-  protected over Weak. It now disagrees with the spec and the code. It was not changed in
-  this review.
+- ~~README.md §7 "Constraint priorities" still lists nutrient coverage, with Strong evidence
+  protected over Weak. It now disagrees with the spec and the code.~~ **Resolved** in a
+  separate commit, "Review 2 follow-up: README §7": within a slot, no repeat, then season;
+  evidence-based food ranking is future work.
 - `EVIDENCE_RANK` is now used only for its tier names; its numeric ranks are unused. For
   the dead-code review.
+
+## Review 3: names not in the spec
+
+**Date:** 2026-10-14
+**Scope:** every function, parameter, constant and concept in `plan.py`.
+
+### What we looked for
+
+Names that don't come from the specs, design.md or PLANNING_LOG.md. For each one: what it
+does, where it came from, and whether other code depends on it.
+
+A name counted as traceable when its idea is named in those documents, even if the
+identifier itself is new (for example `HISTORY_ENTRIES` for "at most 3 entries", or
+`item_notes` for "item-level notes"). About 35 names passed on that basis.
+
+### What we found
+
+All of the names below were invented while writing the code, with no decision recorded.
+Most come from the v1 build (`de73012`); `NO_SOURCE` comes from `66d10a3`.
+
+| # | Name | What it does | Who depends on it |
+|---|---|---|---|
+| 1 | `EVIDENCE_RANK` | Tier names mapped to the numbers 3/2/1/0. Since Review 2 the numbers are unused. | `load_rules`; 3 tests |
+| 2 | `NO_SOURCE` | The text "no supporting source found". The spec only says "none was found". | `evidence_detail`; 1 test used it as its expected value (circular) |
+| 3 | `InputError` | The exception for any user or data problem; `main` turns it into an error exit. | 7 places that raise it; 1 test |
+| 4 | `NoAlternativeError` | Raised when `--prefer-alternative` has nothing to swap to. Its two messages reach the user. | `resolve_candidates` → `main`; 1 test |
+| 5 | `Suggestion` | Bundles a nutrient, its `Resolution` and its evidence claim. | Renderers and label functions |
+| 6 | `plan_slot` | Works out one slot against its history (Review 2's b3 fix). | `main` only |
+| 7 | `new_entries`, `phase_history` | Locals. `None` means "leave history unchanged", which isn't written down. | `main` ↔ `plan_slot` |
+| 8 | `_rank_key` | The sort key. `_deciding_reason` read it by position (`[0]`, `[1]`). | `resolve_candidates`, `_deciding_reason` |
+| 9 | `runner_up`, `top` | Locals. The spec says "top-ranked" and "next-best alternative". | Local only |
+| 10 | `season_for` | Month to season. The behaviour is in the spec since Review 2; the name isn't. | `main` |
+| 11 | `food_label`, `evidence_label`, `evidence_detail` | Formatting helpers, including the `(none)` text. | Both renderers |
+| 12 | `render_terminal`, `render_markdown` | Build the two outputs, with headers no document defines. | `main` |
+| 13 | `build_parser` | Sets up the argument parser. | `main` |
+| 14 | `warn` | A callback that `load_rules` and `load_history` print warnings with. | `main`; 2 tests |
+| 15 | `main(today, workdir, out, err)` | Test hooks. | All end-to-end tests |
+| 16 | `main(rules_path=…)` | Overrides where the rules file is read from. Nothing passes it. | None |
+| 17 | `HERE` | The default `workdir`. It means the output files are always written next to `plan.py`, which no spec stated. | `main`'s default |
+| 18 | Empty Follicular stored as first day > last day | How a zero-day phase is represented. | `phase_for_day`; 1 test |
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+- **#17, file location added to the spec.** The cli-output spec has a new requirement,
+  "Files live next to the script". It matches the README demo ("Next to the script").
+  Confirmed by running a copy of `plan.py` from another folder: both output files were
+  written next to the script, and nothing was written to the working folder.
+  `openspec validate --specs` passes, 4 of 4.
+- **#2, #4, #12, wording accepted and logged.** The user accepted the current wording as
+  their decision: `NO_SOURCE`, the two `NoAlternativeError` messages and the output
+  headers. The test that used `plan.NO_SOURCE` now uses the literal text. Confirmed by
+  changing the wording in a throwaway copy: that test fails.
+- **#8, rank key fields named.** `_rank_key` now returns a `RankKey(repeats,
+  out_of_season)` NamedTuple, and `_deciding_reason` compares the parts by name. A
+  NamedTuple sorts like a plain tuple, so the ranking is unchanged (Claude's choice of
+  NamedTuple). No test changed.
+- **#1 and #16, deferred.** Left for the dead-code review.
+- **#3, #5–#7, #9–#11, #13–#15 and #18, no change.** Accepted as normal implementation
+  names.
+
+**Result.** All 70 tests pass.

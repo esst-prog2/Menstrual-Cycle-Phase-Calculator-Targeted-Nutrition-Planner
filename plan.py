@@ -12,6 +12,7 @@ import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
 
@@ -119,20 +120,26 @@ class NoAlternativeError(Exception):
     pass
 
 
+class RankKey(NamedTuple):
+    """Sort key for a candidate; fields in priority order, False ranks first."""
+    repeats: bool
+    out_of_season: bool
+
+
 def _rank_key(candidate, recent_foods, season):
-    return (candidate["food"] in recent_foods,
-            season not in candidate["seasons"])
+    return RankKey(repeats=candidate["food"] in recent_foods,
+                   out_of_season=season not in candidate["seasons"])
 
 
 def _deciding_reason(winner, loser, recent_foods, season):
     """Name the first constraint, in priority order, on which loser ranks below winner."""
     win_key = _rank_key(winner, recent_foods, season)
     lose_key = _rank_key(loser, recent_foods, season)
-    if win_key[0] != lose_key[0]:
-        if not lose_key[1] and win_key[1]:
+    if win_key.repeats != lose_key.repeats:
+        if not lose_key.out_of_season and win_key.out_of_season:
             return "in season, but repeats a recent pick"
         return "repeats a recent pick"
-    if win_key[1] != lose_key[1]:
+    if win_key.out_of_season != lose_key.out_of_season:
         return "out of season"
     return None
 
