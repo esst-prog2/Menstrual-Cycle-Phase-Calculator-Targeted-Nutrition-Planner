@@ -18,7 +18,6 @@ HERE = Path(__file__).resolve().parent
 
 CATEGORIES = ["dairy", "eggs", "gluten", "nuts", "peanuts", "soy",
               "fish", "shellfish", "sesame", "meat", "pork"]
-PHASES = ["Menstrual", "Follicular", "Ovulatory", "Luteal"]
 SEASONS = ["winter", "spring", "summer", "autumn"]
 MIN_CYCLE, MAX_CYCLE = 21, 38
 MENSTRUAL_DAYS = 5
@@ -97,6 +96,9 @@ def phase_ranges(cycle_length):
         "Ovulatory": (ovulation_day - 1, ovulation_day + 1),
         "Luteal": (ovulation_day + 2, cycle_length),
     }
+
+
+PHASES = list(phase_ranges(MIN_CYCLE))     # the one list of phases, in cycle order
 
 
 def phase_for_day(day, cycle_length):

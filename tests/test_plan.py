@@ -21,6 +21,10 @@ CATEGORIES = ["dairy", "eggs", "gluten", "nuts", "peanuts", "soy",
               "fish", "shellfish", "sesame", "meat", "pork"]       # 2026-09-25
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
               "stub database that has not been evidence-reviewed.")
+REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
+NO_FOOD_NOTE = "no suitable food left because of your exclusions"            # 2026-09-25
+LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
+             "is assumed until your next period starts")
 
 
 def days_ago(n):
@@ -198,8 +202,8 @@ class TestCycleEndToEnd(Workspace):
     def test_grace_window_note_in_both_outputs(self):
         out, _ = self.run_plan("--last-period", days_ago(30), "--cycle-length", "28")
         self.assertIn("Luteal phase", out)
-        self.assertIn("period may be late", out)
-        self.assertIn("period may be late", self.markdown())
+        self.assertIn(f"Note: {LATE_NOTE}", out)
+        self.assertIn(f"> Note: {LATE_NOTE}", self.markdown())
 
     def test_past_grace_window_rejected_end_to_end(self):
         err = self.run_error("--last-period", days_ago(35), "--cycle-length", "28")
@@ -442,10 +446,10 @@ class TestSelectionEndToEnd(Workspace):
         self.use_rules({p: {"A": [food("a1", ["fish"]), food("a2", ["fish"])],
                             "B": [food("b1")], "C": [food("c1")]} for p in plan.PHASES})
         out, _ = self.run_plan(*OVULATORY, "--exclude", "fish")
-        self.assertIn(plan.NO_FOOD_NOTE, out)
+        self.assertIn(NO_FOOD_NOTE, out)
         self.assertIn("b1", out)
         self.assertIn("c1", out)
-        self.assertIn(plan.NO_FOOD_NOTE, self.markdown())
+        self.assertIn(NO_FOOD_NOTE, self.markdown())
 
     def test_wrong_nutrient_count_warns_but_runs(self):
         self.use_rules({p: {"A": [food(f"a{i}") for i in range(5)],
@@ -545,9 +549,9 @@ class TestHistory(Workspace):
         self.ovulatory(2)
         self.ovulatory(1)
         out, _ = self.ovulatory(0)
-        self.assertIn(plan.REPEAT_NOTE, out)
-        self.assertIn(plan.REPEAT_NOTE, self.markdown())
-        self.assertEqual(out.count(plan.REPEAT_NOTE), 1)       # only slot A
+        self.assertIn(REPEAT_NOTE, out)
+        self.assertIn(REPEAT_NOTE, self.markdown())
+        self.assertEqual(out.count(REPEAT_NOTE), 1)       # only slot A
 
     def test_forced_repeat_note_after_swap_in_both_outputs(self):
         self.use_slot_a([food("a1"), food("a2")])
@@ -555,10 +559,10 @@ class TestHistory(Workspace):
         self.ovulatory(1)                                      # a2
         out, _ = self.ovulatory(0, "--prefer-alternative", "a")
         self.assertIn("A: a2 [placeholder]", out)              # a1 ranks first, so the swap shows a2
-        self.assertEqual(out.count(plan.REPEAT_NOTE), 1)
-        self.assertIn(plan.REPEAT_NOTE, self.markdown())
+        self.assertEqual(out.count(REPEAT_NOTE), 1)
+        self.assertIn(REPEAT_NOTE, self.markdown())
         later, _ = self.ovulatory()                            # the kept swap is still a repeat
-        self.assertEqual(later.count(plan.REPEAT_NOTE), 1)
+        self.assertEqual(later.count(REPEAT_NOTE), 1)
 
     def test_corrupt_history_backed_up_and_reset(self):
         (self.dir / "history.json").write_text("{not json")

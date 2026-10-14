@@ -490,10 +490,15 @@ the seventh is the #7 data test.
 
 **Result.** All 79 tests pass. `openspec validate --specs` passes, 4 of 4.
 
-**Left open:**
+**Left open, then closed in "Review 5 follow-up":**
 
-- `PHASES` and the keys of `phase_ranges()` are still two lists in the code. Today they
-  match, and the data is now checked against `PHASES`.
-- Tests compare against `plan.REPEAT_NOTE`, `NO_FOOD_NOTE` and `LATE_NOTE` rather than
-  literal text. This is the circular pattern from Review 1, not yet decided for these
-  three notes.
+- `PHASES` and the keys of `phase_ranges()` were two lists in the code. **Closed:** `PHASES`
+  is now derived from `phase_ranges()`, which is the phase rule.
+- Tests compared against `plan.REPEAT_NOTE`, `NO_FOOD_NOTE` and `LATE_NOTE` instead of
+  literal text, the circular pattern from Review 1. **Closed:** the tests now check the
+  literal text, and the late-note tests check the full sentence instead of only "period may
+  be late". Changing any of the three wordings in a throwaway copy makes a test fail.
+
+  **Wording origin:** design.md contains no note text. Only `NO_FOOD_NOTE`'s wording is
+  recorded as decided (PLANNING_LOG, 2026-09-25). The full repeat-note and late-note
+  sentences are copied from the code and still need the user's confirmation.
