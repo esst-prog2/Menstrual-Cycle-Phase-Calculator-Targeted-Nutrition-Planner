@@ -37,6 +37,7 @@ NO_SOURCE = "no supporting source found"
 SWAP_NOTE = "swapped in with --prefer-alternative"
 REPEAT_NOTE = f"repeated: no other candidate was available within the last {NO_REPEAT_CYCLES} cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"
+NO_DATA_NOTE = "no foods for this nutrient in the data"
 LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
              "is assumed until your next period starts")
 
@@ -57,10 +58,9 @@ def parse_iso_date(value):
 
 
 def parse_cycle_length(value):
-    try:
-        length = int(value)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"'{value}' is not a whole number of days")
+    if not re.fullmatch(r"[0-9]+", value):
+        raise argparse.ArgumentTypeError(f"'{value}' is not a whole number of days (digits only)")
+    length = int(value)
     if not MIN_CYCLE <= length <= MAX_CYCLE:
         raise argparse.ArgumentTypeError(
             f"{length} is outside the supported range of {MIN_CYCLE}-{MAX_CYCLE} days")
@@ -124,6 +124,7 @@ class Resolution:
     reason: str | None = None     # why the alternative lost; None on a full tie
     forced_repeat: bool = False
     swapped: bool = False
+    no_data: bool = False         # the data has no foods at all for this nutrient
 
 
 class NoAlternativeError(Exception):
@@ -162,6 +163,10 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
     allowed, that food is chosen (this cycle's saved pick); a "chosen over" reason is
     given only when the ranking agrees with it.
     """
+    if not candidates:
+        if prefer_alternative:
+            raise NoAlternativeError("there are no foods for this nutrient in the data")
+        return Resolution(chosen=None, no_data=True)
     exclusions = set(exclusions)
     recent_foods = set(recent_foods)
     valid = [c for c in candidates if not exclusions & set(c["categories"])]
@@ -195,12 +200,52 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
 
 # ----------------------------------------------------------------- data I/O
 
+def read_json(path):
+    """Parse a JSON file as UTF-8. Any problem reading it becomes an InputError."""
+    path = Path(path)
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise InputError(f"{path.name} was not found in {path.parent}")
+    except OSError as exc:
+        raise InputError(f"{path.name} could not be opened ({exc.strerror})")
+    except UnicodeDecodeError:
+        raise InputError(f"{path.name} is not valid UTF-8 text")
+    except json.JSONDecodeError as exc:
+        raise InputError(f"{path.name} is not valid JSON (line {exc.lineno}, column {exc.colno}: {exc.msg})")
+
+
+def _check_rules_shape(data, name):
+    """Stop with a clear error if the rules file does not have the expected structure."""
+    def require(ok, where, what):
+        if not ok:
+            raise InputError(f"{name}: {where} must be {what}")
+    require(isinstance(data, dict), "the file", "a JSON object")
+    require(isinstance(data.get("phases"), dict), '"phases"', "an object")
+    require(isinstance(data.get("evidence"), dict), '"evidence"', "an object")
+    for label in ("phases", "evidence"):
+        for phase, nutrients in data[label].items():
+            require(isinstance(nutrients, dict), f'"{label}"/{phase}', "an object")
+    for phase, nutrients in data["phases"].items():
+        for nutrient, candidates in nutrients.items():
+            require(isinstance(candidates, list), f"{phase}/{nutrient}", "a list of foods")
+            for i, c in enumerate(candidates):
+                where = f"{phase}/{nutrient} food {i + 1}"
+                require(isinstance(c, dict), where, "an object")
+                require(isinstance(c.get("food"), str), f'{where} "food"', "a string")
+                where = f"{phase}/{nutrient}/{c['food']}"
+                for field in ("categories", "seasons"):
+                    require(isinstance(c.get(field), list), f'{where} "{field}"', "a list")
+                require(isinstance(c.get("placeholder"), bool), f'{where} "placeholder"', "true or false")
+
+
 def load_rules(path, warn):
     """Return (phases, evidence). Every nutrient must have an evidence tier, so no
     suggestion is ever shown without one; a source is required unless Speculative."""
-    data = json.loads(Path(path).read_text())
-    phases, evidence = data["phases"], data.get("evidence", {})
     name = Path(path).name
+    data = read_json(path)
+    _check_rules_shape(data, name)
+    phases, evidence = data["phases"], data["evidence"]
     for label, found in (("phases", phases), ("evidence", evidence)):
         if set(found) != set(PHASES):
             raise InputError(f"{name}: \"{label}\" must have exactly the phases {', '.join(PHASES)} "
@@ -246,7 +291,8 @@ def _valid_history(data):
                 return False
             for entry in entries:
                 if not (isinstance(entry, dict) and isinstance(entry.get("cycle_start"), str)
-                        and isinstance(entry.get("food"), str)):
+                        and isinstance(entry.get("food"), str)
+                        and isinstance(entry.get("swapped", False), bool)):
                     return False
     return True
 
@@ -256,9 +302,12 @@ def load_history(path, warn, today):
     if not path.exists():
         return {}
     try:
-        data = json.loads(path.read_text())
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError):
-        data = None
+        data = None                   # corrupt: backed up below
+    except OSError as exc:
+        # Cannot be read at all, so it cannot be backed up either: stop and leave it alone.
+        raise InputError(f"{path.name} could not be opened ({exc.strerror}); it was left unchanged")
     if data is not None and _valid_history(data):
         return data
     # Dated, and never overwrites an earlier backup: history.json.YYYY-MM-DD[-N].bak
@@ -274,7 +323,7 @@ def load_history(path, warn, today):
 
 
 def save_history(path, history):
-    Path(path).write_text(json.dumps(history, indent=2) + "\n")
+    Path(path).write_text(json.dumps(history, indent=2) + "\n", encoding="utf-8")
 
 
 # ------------------------------------------------------------------ planning
@@ -316,7 +365,7 @@ def plan_slot(nutrient, candidates, entries, cycle_start, exclusions, prefer, se
 def item_notes(suggestion):
     res = suggestion.resolution
     if res.chosen is None:
-        return [NO_FOOD_NOTE]
+        return [NO_DATA_NOTE if res.no_data else NO_FOOD_NOTE]
     notes = []
     if res.swapped:
         notes.append(SWAP_NOTE)
@@ -426,9 +475,13 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
 
     if phase_history:
         history[phase] = phase_history
-    save_history(history_path, history)
-    (workdir / "nutrients.md").write_text(
-        render_markdown(day, args.cycle_length, phase, is_late, suggestions, today))
+    try:
+        # nutrients.md first: if it cannot be written, the rotation is not advanced either.
+        (workdir / "nutrients.md").write_text(
+            render_markdown(day, args.cycle_length, phase, is_late, suggestions, today), encoding="utf-8")
+        save_history(history_path, history)
+    except OSError as exc:
+        parser.error(f"{Path(exc.filename).name} could not be written ({exc.strerror})")
     out.write(render_terminal(day, args.cycle_length, phase, is_late, suggestions))
     return 0
 

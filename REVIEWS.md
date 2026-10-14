@@ -502,3 +502,86 @@ the seventh is the #7 data test.
   **Wording origin:** design.md contains no note text. Only `NO_FOOD_NOTE`'s wording is
   recorded as decided (PLANNING_LOG, 2026-09-25). The full repeat-note and late-note
   sentences are copied from the code and still need the user's confirmation.
+
+## Review 6: errors that disappear
+
+**Date:** 2026-10-14
+**Scope:** `plan.py` and `tests/test_plan.py`.
+
+### What we looked for
+
+`except Exception`, bare `except:`, `except: pass`, `return None` or empty values after an
+error, and errors caught and turned into a default. For each: what is caught, whether the
+catch is narrower or broader than needed, and whether the user finds out. The deliberate
+corrupt-history handling was checked to make sure it catches only what it should.
+
+### What we found
+
+There is no `except Exception`, no bare `except:` and no `except: pass` in `plan.py` or the
+tests. All 5 `except` clauses are narrow:
+
+| # | Where | What is caught | Notes |
+|---|---|---|---|
+| 1 | `parse_iso_date` | `ValueError` | Fine. |
+| 2 | `parse_cycle_length` | `ValueError` | `int()` accepted `2_8` and `" 28 "` silently. |
+| 3 | `load_history` | `JSONDecodeError`, `UnicodeDecodeError`, plus the shape check | Catches only parse failures, as intended. A history file that couldn't be opened crashed with a traceback. The cli-output spec said "unreadable or corrupt". |
+| 4 | `main` | `NoAlternativeError` → `InputError` | Fine. |
+| 5 | `main` | `InputError` → `parser.error` | Fine. |
+
+The errors that really disappeared did so through **missing checks**, where bad data
+quietly became a default. Each was confirmed by running it in a throwaway folder.
+
+**Bad data turned into a default:**
+
+| # | What happened |
+|---|---|
+| A1 | A `"placeholder"` value that wasn't exactly `true` silently dropped the `[placeholder]` label. |
+| A2 | An empty slot in the data was blamed on the user's exclusions, in the note and in the `--prefer-alternative` error. |
+| A3 | A non-boolean `"swapped"` in history counted as true. |
+| A4 | A history food no longer in the data was kept silently. |
+| A5 | `categories` written as a string gave the error "unknown categories d, a, i, r, y". |
+
+**Loud but unhelpful (a traceback instead of a message):**
+
+| # | What happened |
+|---|---|
+| B1 | A missing rules file crashed with `FileNotFoundError`. |
+| B2 | A rules file that wasn't JSON crashed with `JSONDecodeError`. |
+| B3 | Missing fields crashed with `KeyError`. |
+| B4 | A history file that couldn't be opened crashed with `IsADirectoryError`. |
+
+**Also found:** files were read and written in the system's default encoding, which is
+not UTF-8 on every system.
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14. Each fix has a test. All 11 new tests fail against
+the old `plan.py`.
+
+| Finding | Change | Test |
+|---|---|---|
+| A1, A5, B3 | A shape and type check runs when the rules file loads: the file, `phases` and `evidence` must be objects; each food must be an object with a string `food`, list `categories`, list `seasons`, and a `placeholder` that is `true` or `false`. A missing `placeholder` also fails (Claude's reading). | `test_placeholder_must_be_true_or_false`, `test_categories_and_seasons_must_be_lists`, `test_missing_fields_are_named` |
+| A2 | An empty slot shows "no foods for this nutrient in the data". `--prefer-alternative` fails with "there are no foods for this nutrient in the data". The exclusions note appears only when exclusions removed everything. | `test_empty_slot_in_data_is_not_blamed_on_exclusions` |
+| A3 | `_valid_history` requires `swapped`, when present, to be `true` or `false`. Otherwise the file is backed up as corrupt. | `test_swapped_not_true_or_false_treated_as_corrupt` |
+| B1, B2 | A new `read_json()` turns a missing file, an unreadable file, non-UTF-8 text or invalid JSON (with line and column) into one `InputError`. | `test_missing_rules_file`, `test_rules_file_not_json_or_not_utf8` |
+| B4 | A `history.json` that can't be opened stops the run with a clear error. It is left unchanged and gets no backup, since a backup would fail too (Claude's choice). Parse errors are still backed up as before, with the same warning text. | `test_unopenable_history_stops_and_is_left_alone` |
+| Write errors | Failing to write `nutrients.md` or `history.json` is one clear error. `nutrients.md` is now written **first**, so a run whose output fails doesn't advance the rotation (Claude's choice). | `test_unwritable_output_is_a_clear_error_and_rotation_does_not_advance` |
+| `--cycle-length` | Digits 0–9 only. This rejects `2_8`, `" 28 "`, `+28`, and non-ASCII digits (the last one is Claude's addition). | `test_cycle_length_digits_only` |
+| UTF-8 | Every file read and write in `plan.py` and the tests passes `encoding="utf-8"`. | `test_files_read_and_written_as_utf8` runs `plan.py` under a Latin-1 locale with an accented food name. It is skipped where no such locale exists. |
+| Spec wording | cli-output's "unreadable or corrupt" now says "corrupt", with a definition. The new requirement "Data file problems are clear errors" covers opening and writing failures. | — |
+
+Specs updated:
+
+- **cli-output:** the new "Data file problems are clear errors" requirement, plus the
+  no-foods-in-the-data note in the item-level notes.
+- **rotation-history:** a precise definition of a corrupt file, including `swapped`, plus
+  the case of a file that can't be opened.
+- **nutrient-selection:** the empty slot in the data, and the type checks.
+- **cycle-phase-calculation:** digits only for `--cycle-length`.
+
+**Known limitation (A4, kept as is).** A history entry naming a food that is no longer in
+`nutrition_rules.json` is kept and still counts as "recent", but matches nothing. Renaming
+a food in the data therefore resets that food's rotation silently.
+
+**Result.** All 90 tests pass. `openspec validate --specs` passes, 4 of 4.

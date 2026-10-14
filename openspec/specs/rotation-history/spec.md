@@ -77,7 +77,7 @@ A missing `history.json` SHALL be treated as normal on first run: the system pro
 - **THEN** the system runs normally with empty history and writes a new `history.json`
 
 ### Requirement: Corrupt history.json
-A `history.json` that exists but cannot be parsed SHALL be backed up to `history.json.<YYYY-MM-DD>.bak` (today's date), then treated as empty. An existing backup SHALL never be overwritten: if that name is taken, the system adds `-2`, `-3`, … after the date. The system SHALL print a warning in the terminal only (not in `nutrients.md`) and SHALL NOT crash.
+A `history.json` that exists and can be opened but is corrupt — not valid UTF-8, not valid JSON, or not in the expected shape (including a `"swapped"` value that is not `true` or `false`) — SHALL be backed up to `history.json.<YYYY-MM-DD>.bak` (today's date), then treated as empty. An existing backup SHALL never be overwritten: if that name is taken, the system adds `-2`, `-3`, … after the date. The system SHALL print a warning in the terminal only (not in `nutrients.md`) and SHALL NOT crash.
 
 #### Scenario: Unparseable history file
 - **WHEN** `history.json` exists but is not valid JSON in the expected shape
@@ -86,6 +86,14 @@ A `history.json` that exists but cannot be parsed SHALL be backed up to `history
 #### Scenario: Second corruption keeps the earlier backup
 - **WHEN** `history.json` is corrupt again after an earlier backup was made, on another day or the same day
 - **THEN** a new backup file is written and every earlier backup is left unchanged
+
+#### Scenario: Swapped flag of the wrong type
+- **WHEN** a history entry has `"swapped": "no"`
+- **THEN** the file is treated as corrupt: backed up, with a terminal warning, and history starts empty
+
+#### Scenario: History file cannot be opened
+- **WHEN** `history.json` exists but cannot be opened at all
+- **THEN** it is not treated as corrupt; the run stops with a clear error (see cli-output "Data file problems are clear errors")
 
 ### Requirement: 21-day cycle does not break rotation
 The system SHALL run to completion for a 21-day cycle, including its zero-day Follicular phase, without error.

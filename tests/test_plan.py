@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,7 @@ DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes f
               "stub database that has not been evidence-reviewed.")
 REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"            # 2026-09-25
+SWAP_NOTE_TEXT = "swapped in with --prefer-alternative"
 LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
              "is assumed until your next period starts")
 
@@ -36,7 +38,7 @@ OVULATORY = ("--last-period", days_ago(14), "--cycle-length", "28")
 
 
 def real_rules():
-    return json.loads((ROOT / "nutrition_rules.json").read_text())
+    return json.loads((ROOT / "nutrition_rules.json").read_text(encoding="utf-8"))
 
 
 def nutrient_lines(out, nutrient):
@@ -86,7 +88,7 @@ class Workspace(unittest.TestCase):
         return err.getvalue()
 
     def history(self):
-        return json.loads((self.dir / "history.json").read_text())
+        return json.loads((self.dir / "history.json").read_text(encoding="utf-8"))
 
     def markdown(self):
         return (self.dir / "nutrients.md").read_text()
@@ -95,7 +97,7 @@ class Workspace(unittest.TestCase):
         if evidence is None:
             evidence = {p: {n: {"tier": "Speculative", "source": None} for n in ns} for p, ns in phases.items()}
         (self.dir / "nutrition_rules.json").write_text(
-            json.dumps({"notice": "test", "evidence": evidence, "phases": phases}))
+            json.dumps({"notice": "test", "evidence": evidence, "phases": phases}), encoding="utf-8")
 
     def use_slot_a(self, slot_a):
         """Invented rules: slot A as given, B and C with 5 always-in-season foods, in every phase."""
@@ -144,6 +146,11 @@ class TestInputValidation(Workspace):
         for bad in ("20", "39"):
             err = self.run_error("--last-period", days_ago(0), "--cycle-length", bad)
             self.assertIn("21-38", err)
+
+    def test_cycle_length_digits_only(self):
+        for bad in ("2_8", " 28 ", "+28", "\u0662\u0668"):     # last one: Arabic-Indic digits
+            err = self.run_error("--last-period", days_ago(0), "--cycle-length", bad)
+            self.assertIn("is not a whole number of days (digits only)", err)
 
     def test_cycle_length_boundaries_accepted(self):
         for ok in ("21", "38"):
@@ -301,7 +308,7 @@ class TestRulesFileChecks(Workspace):
     """Review 5: the data is checked against the code's lists before anything is written."""
 
     def assert_stops(self, rules, message, *extra):
-        (self.dir / "nutrition_rules.json").write_text(json.dumps(rules))
+        (self.dir / "nutrition_rules.json").write_text(json.dumps(rules), encoding="utf-8")
         err = self.run_error(*OVULATORY, *extra)
         self.assertIn(message, err)
         self.assertFalse((self.dir / "nutrients.md").exists())
@@ -335,6 +342,76 @@ class TestRulesFileChecks(Workspace):
         rules["phases"]["Ovulatory"]["Zinc"][4]["categories"] = ["diary"]     # cheddar cheese
         self.assert_stops(rules, "Ovulatory/Zinc/cheddar cheese has unknown categories diary",
                           "--exclude", "dairy")
+
+    # Review 6: every problem with the rules file is one clear error, never a traceback.
+
+    def test_placeholder_must_be_true_or_false(self):
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Omega-3"][0]["placeholder"] = "true"
+        self.assert_stops(rules, 'Ovulatory/Omega-3/salmon "placeholder" must be true or false')
+
+    def test_categories_and_seasons_must_be_lists(self):
+        for field in ("categories", "seasons"):
+            with self.subTest(field=field):
+                rules = real_rules()
+                rules["phases"]["Ovulatory"]["Zinc"][0][field] = "dairy"
+                self.assert_stops(rules, f'Ovulatory/Zinc/pumpkin seeds "{field}" must be a list')
+
+    def test_missing_fields_are_named(self):
+        rules = real_rules()
+        del rules["phases"]["Ovulatory"]["Zinc"][0]["seasons"]
+        self.assert_stops(rules, 'Ovulatory/Zinc/pumpkin seeds "seasons" must be a list')
+        rules = real_rules()
+        del rules["phases"]
+        self.assert_stops(rules, '"phases" must be an object')
+
+    def test_missing_rules_file(self):
+        (self.dir / "nutrition_rules.json").unlink()
+        err = self.run_error(*OVULATORY)
+        self.assertIn(f"nutrition_rules.json was not found in {self.dir}", err)
+        self.assertFalse((self.dir / "nutrients.md").exists())
+
+    def test_rules_file_not_json_or_not_utf8(self):
+        for raw, message in ((b"{oops", "nutrition_rules.json is not valid JSON (line 1, column 2"),
+                             (b'{"phases": "\xff"}', "nutrition_rules.json is not valid UTF-8 text")):
+            with self.subTest(message=message):
+                (self.dir / "nutrition_rules.json").write_bytes(raw)
+                err = self.run_error(*OVULATORY)
+                self.assertIn(message, err)
+                self.assertFalse((self.dir / "nutrients.md").exists())
+
+    def test_empty_slot_in_data_is_not_blamed_on_exclusions(self):
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Zinc"] = []
+        (self.dir / "nutrition_rules.json").write_text(json.dumps(rules), encoding="utf-8")
+        out, _ = self.run_plan(*OVULATORY)
+        self.assertEqual(nutrient_lines(out, "Zinc"), ["  Zinc: (none) (evidence: Speculative)",
+                                                       "    note: no foods for this nutrient in the data"])
+        self.assertIn("| (none) | no foods for this nutrient in the data |", markdown_row(self.markdown(), "Zinc"))
+        self.assertNotIn(NO_FOOD_NOTE, out)
+        err = self.run_error(*OVULATORY, "--prefer-alternative", "zinc")
+        self.assertIn("no alternative available for Zinc this cycle "
+                      "(there are no foods for this nutrient in the data)", err)
+
+    def test_files_read_and_written_as_utf8(self):
+        # Run plan.py under a Latin-1 locale: without explicit UTF-8, the accented name is garbled.
+        env = {**os.environ, "LC_ALL": "en_US.ISO8859-1", "PYTHONUTF8": "0"}
+        probe = subprocess.run([sys.executable, "-c", "import locale; print(locale.getpreferredencoding(False))"],
+                               env=env, capture_output=True, text=True)
+        if "8859" not in probe.stdout:
+            self.skipTest("no Latin-1 locale on this machine")
+        shutil.copy(ROOT / "plan.py", self.dir)
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Omega-3"][0]["food"] = "crème fraîche"
+        (self.dir / "nutrition_rules.json").write_text(json.dumps(rules, ensure_ascii=False), encoding="utf-8")
+        real_ovulatory = ("--last-period", (date.today() - timedelta(days=14)).isoformat(),
+                          "--cycle-length", "28")                    # a subprocess uses the real date
+        subprocess.run([sys.executable, str(self.dir / "plan.py"), *real_ovulatory], env=env,
+                       capture_output=True, check=True)
+        self.assertIn("| Omega-3 | Weak - Mumford 2016 (BioCycle) | crème fraîche [placeholder] |",
+                      (self.dir / "nutrients.md").read_bytes().decode("utf-8"))
+        self.assertEqual(json.loads((self.dir / "history.json").read_bytes().decode("utf-8"))
+                         ["Ovulatory"]["Omega-3"][0]["food"], "crème fraîche")
 
 
 # ------------------------------------------------- 4. candidate resolution
@@ -493,7 +570,7 @@ class TestHistory(Workspace):
         before = (self.dir / "history.json").read_text()
         second, _ = self.ovulatory()
         self.assertEqual(first, second)
-        self.assertEqual(before, (self.dir / "history.json").read_text())
+        self.assertEqual(before, (self.dir / "history.json").read_text(encoding="utf-8"))
 
     def test_same_cycle_rerun_keeps_pick_when_season_changes(self):
         # Day 14 on Nov 30 (autumn) and day 15 on Dec 1 (winter), both Ovulatory.
@@ -572,6 +649,29 @@ class TestHistory(Workspace):
         self.assertNotIn("could not be read", out)
         self.assertNotIn("history", self.markdown().lower())
         self.assertIn("Ovulatory", self.history())
+
+    def test_swapped_not_true_or_false_treated_as_corrupt(self):
+        history = {"Ovulatory": {"Zinc": [{"cycle_start": days_ago(14), "food": "oysters", "swapped": "no"}]}}
+        (self.dir / "history.json").write_text(json.dumps(history), encoding="utf-8")
+        out, err = self.ovulatory()
+        self.assertIn("could not be read", err)
+        self.assertTrue((self.dir / "history.json.2026-09-25.bak").exists())
+        self.assertNotIn(SWAP_NOTE_TEXT, out)
+
+    def test_unopenable_history_stops_and_is_left_alone(self):
+        (self.dir / "history.json").mkdir()
+        err = self.run_error(*OVULATORY)
+        self.assertIn("history.json could not be opened", err)
+        self.assertIn("it was left unchanged", err)
+        self.assertTrue((self.dir / "history.json").is_dir())
+        self.assertFalse((self.dir / "nutrients.md").exists())
+        self.assertEqual([p.name for p in self.dir.glob("*.bak")], [])
+
+    def test_unwritable_output_is_a_clear_error_and_rotation_does_not_advance(self):
+        (self.dir / "nutrients.md").mkdir()
+        err = self.run_error(*OVULATORY)
+        self.assertIn("nutrients.md could not be written", err)
+        self.assertFalse((self.dir / "history.json").exists())
 
     def test_wrong_shape_history_treated_as_corrupt(self):
         (self.dir / "history.json").write_text('{"Ovulatory": ["salmon"]}')

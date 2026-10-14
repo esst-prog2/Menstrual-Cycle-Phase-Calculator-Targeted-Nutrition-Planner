@@ -98,6 +98,10 @@ If exclusions remove every candidate for a nutrient slot, the system SHALL NOT f
 - **WHEN** every candidate for a nutrient slot is removed by active `--exclude` values
 - **THEN** the system completes the run, shows the other nutrients normally, and marks the emptied slot as having no suitable food
 
+#### Scenario: Slot empty in the data
+- **WHEN** a nutrient slot has no foods at all in `nutrition_rules.json`
+- **THEN** the slot shows "no foods for this nutrient in the data" instead of the exclusions note, and `--prefer-alternative` for it fails with the same reason
+
 ### Requirement: Placeholder labeling
 A food suggestion SHALL carry a placeholder label exactly when its entry in `nutrition_rules.json` has `"placeholder": true`. Every stub food has that flag, since the foods are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
 
@@ -110,7 +114,7 @@ A food suggestion SHALL carry a placeholder label exactly when its entry in `nut
 - **THEN** that suggestion carries no placeholder label
 
 ### Requirement: Rules file checked against the code's lists
-When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
+When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); a food is not an object with a string `"food"`, a list `"categories"`, a list `"seasons"` and a `"placeholder"` that is `true` or `false`; or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
 
 #### Scenario: Phase missing from the rules file
 - **WHEN** `phases` has no Follicular entry
