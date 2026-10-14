@@ -765,3 +765,77 @@ lists" covers unknown food keys.
 `test_source_rule` fails in all 5 cases, one of them with the old `KeyError` crash.
 
 **Result.** All 94 tests pass. `openspec validate --specs` passes, 4 of 4.
+
+## Review 9: what should not be in git
+
+**Date:** 2026-10-14
+**Scope:** the whole git history on all branches, local and remote (`main`, `hw4-spike`,
+`hw5-usable`, `hw6-review`), not only the current files.
+
+### What we looked for
+
+- **Files that should never have been committed:** `history.json`, any `.bak` backup,
+  `nutrients.md`, `.env`, keys or tokens, large data files.
+- **Personal data inside committed text:** real `--last-period` dates or cycle details
+  from the user's own runs, in the log, the reviews, the tests, sample outputs or commit
+  messages.
+- **Anything else personal** beyond normal git author information.
+
+This entry describes the personal data without repeating it.
+
+### What we found
+
+**Files: clean.**
+
+- No personal file, `.env`, key, token or credential file was ever committed, in any
+  commit on any branch.
+- The largest blob ever stored is 45 KB.
+- A search of every commit for secret-like strings found nothing.
+- The user's real `history.json` and `nutrients.md` exist only locally, covered by
+  `.gitignore`.
+
+**Personal data in committed text:**
+
+| # | What | Where | Since | In current files? |
+|---|---|---|---|---|
+| P1 | The user's real run: a written prediction stating the user's current cycle state, the real command with the real last-period date and cycle length, and the full terminal and `nutrients.md` output (cycle day and phase, run date). The date matched the user's local, ignored `history.json`. | PLANNING_LOG.md, the 2026-10-08 entries | Commit `fde555e`, merged into public `origin/main` by PR #4 | Yes, until this review |
+| P2 | The commit message of `fde555e` names the phase of that real run. Together with its timestamp, it reveals the timing even without the file. | Commit message | `fde555e` | Only in history |
+| P3 | A local folder path containing the user's macOS username, inside pasted test output | PLANNING_LOG.md, the 2026-10-08 mutation-check output | Commit `fb9b034`, also on `origin/main` | Yes, until this review |
+
+The repository is public on GitHub (checked through the GitHub API, which needs no login:
+`visibility: public`, 0 forks).
+
+**Other personal data: clean.**
+
+- Author information is normal: the user's name and email as the git author, plus
+  GitHub-web commits.
+- No email addresses or other names appear in any file, in any commit.
+- Every other `--last-period` date in the repo is invented.
+
+### What we did
+
+All of these decisions are the user's. Every decision is logged in PLANNING_LOG.md under
+2026-10-14.
+
+- **P1 and P3 removed from the current PLANNING_LOG.md.**
+  - The real-run entries (the prediction, the real command, the output and the
+    "matched the prediction" line) are replaced by one note. It says a real run with a
+    prediction was logged and matched, and that its details were removed on 2026-10-14
+    for privacy.
+  - The two "open gap" lines from the same day are kept; they hold no personal data.
+  - The folder path in the mutation-check output is replaced by
+    `[project folder, removed for privacy]`.
+  - This is the one exception to the log's "never rewrite an earlier line" rule.
+    Privacy overrides it here, and a new log line says so and why.
+- **New rule at the top of AGENTS.md:** never write real personal data (real dates,
+  cycle details, usernames, folder paths) into any committed file; use invented dates in
+  examples.
+- **History is not rewritten** (the user's decision). The removed details remain in
+  earlier commits on every branch that contains `fde555e` or `fb9b034`, including public
+  `origin/main` and PR #4's diff, and in `fde555e`'s commit message (P2). The user knows
+  this and accepts it: removing the data from the current files is enough.
+
+**Check.** After the change, a search of every file in the working tree finds none of the
+removed data.
+
+**Result.** No code changed. All 94 tests pass.

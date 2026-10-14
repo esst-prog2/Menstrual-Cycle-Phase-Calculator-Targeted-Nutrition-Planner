@@ -55,7 +55,7 @@
 FAIL: test_each_claim_has_its_spike_tier (test_plan.TestEvidenceTiers.test_each_claim_has_its_spike_tier)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/Users/itirbozdag/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
+  File "[project folder, removed for privacy]/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
     self.assertEqual(actual, self.SPIKE_TIERS)
     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: {('Me[16 chars]): 'Speculative', ('Menstrual', 'Vitamin C'): [387 chars]ate'} != {('Me[16 chars]): 'Strong', ('Menstrual', 'Vitamin C'): 'Mode[387 chars]ate'}
@@ -77,43 +77,7 @@ Ran 65 tests in 0.083s
 OK
 ```
 
-2026-10-08 — User's prediction, recorded verbatim before the real run (program not yet run). Decided by: user.
-
-Before running: I am on my period, so I expect the Menstrual phase, with Iron (evidence: Strong), Vitamin C (Moderate) and Magnesium (Moderate). All three should show a source, none "no supporting source found".
-
-2026-10-08 — Real run, done by the user in their own terminal: `python plan.py --last-period 2026-10-06 --cycle-length 28`. Decided by: user.
-
-Terminal output:
-
-```
-PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.
-
-Day 3 of your 28-day cycle: Menstrual phase
-
-Nutrients that matter now, and a food that contains each:
-  Iron: lentils [placeholder] (evidence: Strong)
-  Vitamin C: broccoli [placeholder] (evidence: Moderate)
-    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
-  Magnesium: pumpkin seeds [placeholder] (evidence: Moderate)
-```
-
-nutrients.md:
-
-```
-# Nutrients for the Menstrual phase
-
-Generated 2026-10-08 - day 3 of a 28-day cycle.
-
-> **PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.**
-
-| Nutrient | Evidence | Food | Notes |
-| --- | --- | --- | --- |
-| Iron | Strong - Cochrane CD009747 (2016); NHS | lentils [placeholder] |  |
-| Vitamin C | Moderate - EFSA 2014 opinion; Cook & Reddy 2001 | broccoli [placeholder] | chosen over oranges - out of season; swap with --prefer-alternative vitamin c |
-| Magnesium | Moderate - Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020 | pumpkin seeds [placeholder] |  |
-```
-
-2026-10-08 — The real run matched the prediction: Menstrual phase, Iron (Strong), Vitamin C (Moderate), Magnesium (Moderate), all three with a source in nutrients.md. Decided by: user.
+2026-10-08 — A real run of the tool by the user, with the user's prediction written down beforehand, was logged here, and the run matched the prediction. Its details (the prediction text, the command with its dates and cycle length, and the terminal and nutrients.md output) were removed on 2026-10-14 for privacy (Review 9). Decided by: user.
 2026-10-08 — Open gap, not yet checked by any test: Ovulatory Fiber is still suggested although EVIDENCE.md says the evidence points against it. Noted by: user; no decision yet.
 2026-10-08 — Open gap, not yet checked by any test: the evidence label does not tell the user that most sources are for the whole cycle or for supplements, not for eating the food in this one phase. Noted by: user; no decision yet.
 2026-10-14 — Homework 6 is a code review of the whole repo, one topic per commit, recorded in REVIEWS.md (what we looked for, what we found, what we did). Review 1 (tests): expected phases and the decided values (3 nutrients, 5 candidates, 11 categories, disclaimer) are now literals in the tests; exact note wording is kept as decided in design.md; the per-food evidence ranking path is deferred to the spec-drift and dead-code reviews. Decided by: user.
@@ -170,3 +134,6 @@ Generated 2026-10-08 - day 3 of a 28-day cycle.
 2026-10-14 — Review 8: the Review 6 known limitation (A4) also covers a renamed nutrient: its old history stays in history.json unread, and its rotation starts over. Decided by: user.
 2026-10-14 — Review 8: main takes out=None and err=None and resolves them to sys.stdout/sys.stderr when called, and the placeholder flag is read directly. Decided by: user.
 2026-10-14 — Implementation details for Review 8: a blank (whitespace-only) source also counts as empty; the allowed keys are FOOD_KEYS (food, categories, seasons, placeholder) and CLAIM_KEYS (tier, source); the existing "so its source must be named" message gains "(a non-empty string)". Decided by: Claude.
+2026-10-14 — Review 9: two earlier entries were rewritten for privacy, the one exception to the "never rewrite an earlier line" rule: the 2026-10-08 real-run entry (prediction, real command with dates and cycle length, and its output) is replaced by a short note saying a real run was logged and its details removed, and the local folder path (with the username) in the pasted 2026-10-08 mutation-check output is replaced by a placeholder. Reason: the repository is public, and these lines revealed real period timing and a username. Decided by: user.
+2026-10-14 — Review 9: AGENTS.md gets a rule at the top: never write real personal data (real dates, cycle details, usernames, folder paths) into any committed file; use invented dates in examples. Decided by: user.
+2026-10-14 — Review 9: git history is NOT rewritten. The removed details stay in earlier commits and in commit fde555e's message; the user knows this and accepts it — removing them from the current files is enough. Decided by: user.
