@@ -47,14 +47,8 @@ I open my terminal and run `python plan.py --last-period <a date 14 days ago> --
 (3 nutrients × 4 phases = 12). Each pair was checked against PubMed,
 Cochrane, ACOG, NHS and EFSA for a source supporting that nutrient in that
 specific phase. Full citations, DOIs and verbatim quotes are in
-[EVIDENCE.md](EVIDENCE.md).
-
-| Tier | Count | Pairs |
-|---|---|---|
-| Strong | 2 / 12 | Menstrual Iron, Luteal Calcium |
-| Moderate | 4 / 12 | Menstrual Vitamin C, Menstrual Magnesium, Luteal Magnesium, Luteal Vitamin B6 |
-| Weak | 1 / 12 | Ovulatory Omega-3 |
-| Speculative | 5 / 12 | Follicular Folate, Protein, Vitamin E; Ovulatory Fiber, Zinc |
+[EVIDENCE.md](EVIDENCE.md), which also has [the tier of each pair and the
+count per tier](EVIDENCE.md#summary).
 
 What this means for how the tool's output should be read:
 
@@ -83,16 +77,8 @@ For each phase-nutrient rule, the following is recorded in `EVIDENCE.md`:
    consensus guideline) — not a wellness blog unless that blog cites a
    traceable primary source. I was planning to review the literature with AI and
    base the recommendations based on these.
-3. **Evidence strength**, one of:
-   - **Strong** — supported by systematic review/meta-analysis with
-     consistent findings, or a well-established physiological mechanism
-     (e.g. iron loss during menstruation).
-   - **Moderate** — some supporting evidence, but reviews note inconsistency
-     or lack of consensus.
-   - **Weak** — based on a single small study, or a narrative (non-systematic)
-     review only.
-   - **Speculative** — appears in popular "cycle syncing" content but has no
-     traceable primary study.
+3. **Evidence strength**: Strong, Moderate, Weak or Speculative, as defined
+   in [EVIDENCE.md](EVIDENCE.md#how-claims-were-graded).
 4. Rules labeled **Weak** or **Speculative** are still included in the tool
    (so the project isn't limited to only well-studied phases), but this label
    is surfaced to the user in the terminal output and in `nutrients.md`,

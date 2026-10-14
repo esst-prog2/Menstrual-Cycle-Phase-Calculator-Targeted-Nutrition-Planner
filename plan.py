@@ -19,6 +19,7 @@ HERE = Path(__file__).resolve().parent
 CATEGORIES = ["dairy", "eggs", "gluten", "nuts", "peanuts", "soy",
               "fish", "shellfish", "sesame", "meat", "pork"]
 PHASES = ["Menstrual", "Follicular", "Ovulatory", "Luteal"]
+SEASONS = ["winter", "spring", "summer", "autumn"]
 MIN_CYCLE, MAX_CYCLE = 21, 38
 MENSTRUAL_DAYS = 5
 LUTEAL_LENGTH = 14          # ovulation_day = cycle_length - 14
@@ -35,7 +36,7 @@ DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes f
               "stub database that has not been evidence-reviewed.")
 NO_SOURCE = "no supporting source found"
 SWAP_NOTE = "swapped in with --prefer-alternative"
-REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
+REPEAT_NOTE = f"repeated: no other candidate was available within the last {NO_REPEAT_CYCLES} cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"
 LATE_NOTE = ("period may be late: the cycle length has passed, so the Luteal phase "
              "is assumed until your next period starts")
@@ -108,9 +109,8 @@ def phase_for_day(day, cycle_length):
 
 
 def season_for(month):
-    """Northern Hemisphere meteorological season."""
-    return {12: "winter", 1: "winter", 2: "winter", 3: "spring", 4: "spring", 5: "spring",
-            6: "summer", 7: "summer", 8: "summer"}.get(month, "autumn")
+    """Northern Hemisphere meteorological season: Dec-Feb winter, Mar-May spring, and so on."""
+    return SEASONS[month % 12 // 3]
 
 
 # ------------------------------------------------------- candidate selection
@@ -185,9 +185,9 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
         if runner_up is not None:
             reason = _deciding_reason(top, runner_up, recent_foods, season)
             alternative = runner_up if reason else None
-    # A repeat is forced only when every allowed candidate was used recently.
+    # Repeats rank last, so a repeat is forced exactly when the top candidate repeats.
     return Resolution(chosen=chosen, alternative=alternative, reason=reason,
-                      forced_repeat=all(c["food"] in recent_foods for c in valid),
+                      forced_repeat=_rank_key(top, recent_foods, season).repeats,
                       swapped=bool(prefer_alternative))
 
 
@@ -198,6 +198,17 @@ def load_rules(path, warn):
     suggestion is ever shown without one; a source is required unless Speculative."""
     data = json.loads(Path(path).read_text())
     phases, evidence = data["phases"], data.get("evidence", {})
+    name = Path(path).name
+    for label, found in (("phases", phases), ("evidence", evidence)):
+        if set(found) != set(PHASES):
+            raise InputError(f"{name}: \"{label}\" must have exactly the phases {', '.join(PHASES)} "
+                             f"(missing: {', '.join(sorted(set(PHASES) - set(found))) or 'none'}; "
+                             f"unknown: {', '.join(sorted(set(found) - set(PHASES))) or 'none'})")
+    for phase in PHASES:
+        extra = set(evidence[phase]) - set(phases[phase])
+        if extra:
+            raise InputError(f"{name}: {phase}/{', '.join(sorted(extra))} has an evidence tier "
+                             "but no foods in \"phases\"")
     for phase, nutrients in phases.items():
         if len(nutrients) != NUTRIENTS_PER_PHASE:
             warn(f"Warning: {phase} has {len(nutrients)} nutrients "
@@ -205,11 +216,17 @@ def load_rules(path, warn):
         for nutrient, candidates in nutrients.items():
             claim = evidence.get(phase, {}).get(nutrient)
             if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_RANK:
-                raise InputError(f"{Path(path).name}: {phase}/{nutrient} has no evidence tier "
+                raise InputError(f"{name}: {phase}/{nutrient} has no evidence tier "
                                  f"(expected one of {', '.join(EVIDENCE_RANK)})")
             if (claim.get("source") is None) != (claim["tier"] == "Speculative"):
-                raise InputError(f"{Path(path).name}: {phase}/{nutrient} is {claim['tier']}, so its "
+                raise InputError(f"{name}: {phase}/{nutrient} is {claim['tier']}, so its "
                                  "source must be " + ("null" if claim["tier"] == "Speculative" else "named"))
+            for c in candidates:
+                for field, allowed in (("categories", CATEGORIES), ("seasons", SEASONS)):
+                    unknown = [v for v in c[field] if v not in allowed]
+                    if unknown:
+                        raise InputError(f"{name}: {phase}/{nutrient}/{c['food']} has unknown {field} "
+                                         f"{', '.join(unknown)} (valid: {', '.join(allowed)})")
             if len(candidates) < MIN_CANDIDATES:
                 warn(f"Warning: {phase}/{nutrient} has only {len(candidates)} candidate foods "
                      f"(minimum {MIN_CANDIDATES}); rotation may repeat foods sooner.")
@@ -313,7 +330,8 @@ def food_label(suggestion):
     res = suggestion.resolution
     if res.chosen is None:
         return "(none)"
-    return f"{res.chosen['food']} [placeholder]"
+    label = " [placeholder]" if res.chosen.get("placeholder") is True else ""
+    return res.chosen["food"] + label
 
 
 def evidence_label(suggestion):

@@ -394,3 +394,106 @@ in PLANNING_LOG.md under 2026-10-14.
   output, `nutrients.md` and `history.json` were identical in every run (Claude's check).
 
 **Result.** All 72 tests pass. `openspec validate --specs` passes, 4 of 4.
+
+## Review 5: a copy instead of a change
+
+**Date:** 2026-10-14
+**Scope:** `plan.py`, `tests/test_plan.py`, `nutrition_rules.json`, README.md,
+EVIDENCE.md and `openspec/`.
+
+### What we looked for
+
+Units that do almost the same job under different names, and the same fact kept in two
+places where the copies could drift apart. For each: where the copies are, how different
+they are now, and which one should stay.
+
+### What we found
+
+**Group 1: the same fact in code, data and docs**
+
+| # | Fact | Copies | State before this review |
+|---|---|---|---|
+| 1 | Phases | `PHASES`, `phase_ranges()` keys, JSON keys, spec | `plan.py` never used `PHASES`. A rules file without a phase crashed with a `KeyError`. |
+| 2 | Season names | `season_for()`, JSON, spec, tests | Never checked. A food tagged `"Autumn"` was silently always out of season. |
+| 3 | Categories | `CATEGORIES`, JSON, spec, log, tests | The data was never checked against the list. A food tagged `"diary"` would silently escape `--exclude dairy`. |
+| 4 | Nutrients per phase | JSON `phases` and `evidence` | Checked in one direction only; an extra nutrient in `evidence` was ignored. |
+| 5 | Tiers and sources | EVIDENCE.md (two tables), README count table, JSON, tests, spec, log | All 12 rows matched. README's table was an unchecked third copy. |
+| 6 | "This data is a placeholder" | 60 × `placeholder` and `seasons_placeholder` flags, JSON `notice`, `DISCLAIMER`, the `[placeholder]` label | The code ignored the flags and labelled every food. |
+| 7 | Foods in several slots | 10 foods, each with its own copy of tags and seasons | Consistent, but not checked. |
+| 8 | "2 cycles" | `NO_REPEAT_CYCLES` and the literal in `REPEAT_NOTE` | Same, written twice. |
+| 9 | Decided wording | Spec, code and test literals | Deliberate (Reviews 2–4). |
+| 10 | Archived change vs main specs | `openspec/changes/archive/…` and `openspec/specs/` | The archive is a snapshot, but its design.md was edited in Reviews 2 and 4. |
+| 11 | Tier definitions | README §4 and EVIDENCE.md | Same meaning, different words. |
+
+**Group 2: near-duplicates in `plan.py`**
+
+- **#12:** `render_terminal` and `render_markdown`.
+- **#13:** `evidence_label` and `evidence_detail`.
+- **#14:** the "is this food a repeat?" check, done both in the rank key and in the
+  forced-repeat line.
+
+**Group 3: test helpers**
+
+- **#15:** `OVULATORY` defined twice.
+- **#16:** the slot-A rules pattern written out 6 times, plus `use_season_rules`.
+- **#17:** the real rules file read in 5 places.
+- **#18:** three ways of finding a nutrient's line in the output.
+- **#19:** data-flattening one-liners.
+- **#20:** a test that rebuilt the workspace inline.
+
+**Group 4: deliberate copies.** The tests' literal decided values and `SPIKE_TIERS`
+(Reviews 1 and 3).
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+- **#1–#4, load-time checks.** `load_rules` now stops, before any file is written, with
+  an error naming the problem when:
+  - `phases` or `evidence` doesn't have exactly the four phases;
+  - a nutrient has a tier but no foods (the other direction was already checked);
+  - a food has a category or season outside the code's lists.
+
+  `PHASES` is now used by `plan.py`. A new `SEASONS` constant feeds both `season_for()`
+  and the check (Claude's design; the month mapping was checked for all 12 months).
+  There is a new test for each check: missing phase, unknown phase, evidence nutrient
+  without foods, unknown season, and a category typo used together with `--exclude dairy`.
+  The new nutrient-selection requirement is "Rules file checked against the code's lists".
+- **#6, placeholder label from the flag.** `[placeholder]` is shown only when a food has
+  `"placeholder": true`. New test: `test_placeholder_label_follows_the_flag`. The spec
+  is updated.
+- **#7, consistency test.** `test_food_in_several_slots_has_same_tags_everywhere` is a
+  data test, so it passes on the old code too.
+- **#8 and #14.** `REPEAT_NOTE` is built from `NO_REPEAT_CYCLES`, with the same text as
+  before. The forced-repeat flag now reads the top candidate's rank key: repeats rank
+  last, so the top repeats only when every allowed candidate does.
+- **#5 and #11, README links.** README's copied count table and tier definitions are
+  replaced by links to EVIDENCE.md, at `#summary` and `#how-claims-were-graded`.
+- **#10, archive frozen.** From now on, `openspec/changes/archive/` is frozen. **Record:**
+  the archived `design.md` was edited twice before this decision:
+  - Review 2: the alternative-note template switched from an em dash to a hyphen;
+  - Review 4: the `resolve_candidates` signature gained `keep=None`.
+
+  No other archived file was changed.
+- **#15–#18 and #20, test helpers tidied.** One module-level `OVULATORY`, `real_rules()`,
+  `nutrient_lines()` and `markdown_row()`, `Workspace.use_slot_a()` (replacing 5 inline
+  copies and `use_season_rules`) and `Workspace.reset()`.
+
+  **Check:** the old and tidied test files were run against the same 12 deliberately
+  broken copies of `plan.py`. Each copy was caught by exactly the same tests (Claude's
+  check).
+- **Kept as they are:** #9, #12, #13, #19 and group 4.
+
+**New tests fail on the old code.** 6 of the 7 new tests fail against the old `plan.py`;
+the seventh is the #7 data test.
+
+**Result.** All 79 tests pass. `openspec validate --specs` passes, 4 of 4.
+
+**Left open:**
+
+- `PHASES` and the keys of `phase_ranges()` are still two lists in the code. Today they
+  match, and the data is now checked against `PHASES`.
+- Tests compare against `plan.REPEAT_NOTE`, `NO_FOOD_NOTE` and `LATE_NOTE` rather than
+  literal text. This is the circular pattern from Review 1, not yet decided for these
+  three notes.

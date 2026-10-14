@@ -99,11 +99,30 @@ If exclusions remove every candidate for a nutrient slot, the system SHALL NOT f
 - **THEN** the system completes the run, shows the other nutrients normally, and marks the emptied slot as having no suitable food
 
 ### Requirement: Placeholder labeling
-Every food suggestion SHALL carry a placeholder label, since the foods in `nutrition_rules.json` are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
+A food suggestion SHALL carry a placeholder label exactly when its entry in `nutrition_rules.json` has `"placeholder": true`. Every stub food has that flag, since the foods are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
 
 #### Scenario: Placeholder label present
-- **WHEN** the system suggests any food from the stub database
+- **WHEN** the system suggests a food whose entry has `"placeholder": true`
 - **THEN** that suggestion carries a placeholder label
+
+#### Scenario: Food not marked as a placeholder
+- **WHEN** the system suggests a food whose entry does not have `"placeholder": true`
+- **THEN** that suggestion carries no placeholder label
+
+### Requirement: Rules file checked against the code's lists
+When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
+
+#### Scenario: Phase missing from the rules file
+- **WHEN** `phases` has no Follicular entry
+- **THEN** the system stops with an error naming the missing phase, and writes no files
+
+#### Scenario: Category typo in the rules file
+- **WHEN** a food is tagged `diary` instead of `dairy`
+- **THEN** the system stops with an error naming the food and the unknown category, instead of running with an `--exclude dairy` that misses that food
+
+#### Scenario: Season typo in the rules file
+- **WHEN** a food has the season `Autumn` instead of `autumn`
+- **THEN** the system stops with an error naming the food and the unknown season
 
 ### Requirement: Evidence tier per nutrient
 Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`; the source SHALL be null exactly when the tier is Speculative. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
