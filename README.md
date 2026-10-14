@@ -120,16 +120,18 @@ no rule is added to the JSON without a corresponding entry in
   ## 7. Constraint priorities
   1. **Exclusions (hard constraint, never violated).** An excluded ingredient
    is never shown, regardless of how well it fits other constraints.
-2. **Nutrient coverage for the active phase (soft constraint, highest
-   priority).** This is the project's reason for existing. Within this
-   constraint, a rule labeled Strong evidence (see "Evidence Basis" section)
-   is protected before a Weak-evidence rule when a choice must be made.
-3. **No-repeat-within-2-cycles (soft constraint).** Keeps the suggestions from
-   feeling identical cycle to cycle, but yields to nutrient coverage when
-   the two conflict.
-4. **Seasonality (soft constraint, lowest priority).** Preferred when it
-   doesn't cost anything on the constraints above it, but the first thing
-   sacrificed when it conflicts with them.
+2. **No-repeat-within-2-cycles (soft constraint, highest priority).** Keeps
+   the suggestions from feeling identical cycle to cycle.
+3. **Seasonality (soft constraint, lowest priority).** Preferred when it
+   doesn't cost anything on the constraint above it, but the first thing
+   sacrificed when the two conflict.
+
+Candidates that rank equally keep their order in `nutrition_rules.json`.
+Which nutrients appear is decided by the phase, and each nutrient's evidence
+tier (see "Evidence Basis" section) is shown next to it. Foods within a slot
+are not ranked by evidence, because the stub data has no per-food evidence.
+Future work: once real per-food data exists, prioritize foods by evidence or
+by how rich they are in the nutrient.
 
 **How conflicts are resolved:** ingredients are first filtered to only those
 that satisfy the hard constraint (exclusions). Among the remaining valid
