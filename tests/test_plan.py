@@ -16,6 +16,12 @@ import plan  # noqa: E402
 
 TODAY = date(2026, 9, 25)   # autumn
 
+# Literal values decided in PLANNING_LOG.md, so the tests do not take them from plan.py.
+CATEGORIES = ["dairy", "eggs", "gluten", "nuts", "peanuts", "soy",
+              "fish", "shellfish", "sesame", "meat", "pork"]       # 2026-09-25
+DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
+              "stub database that has not been evidence-reviewed.")
+
 
 def days_ago(n):
     return (TODAY - timedelta(days=n)).isoformat()
@@ -178,9 +184,9 @@ class TestStubData(unittest.TestCase):
     def test_three_nutrients_per_phase_and_five_candidates_per_slot(self):
         self.assertEqual(sorted(self.data["phases"]), sorted(plan.PHASES))
         for phase, nutrients in self.data["phases"].items():
-            self.assertEqual(len(nutrients), plan.NUTRIENTS_PER_PHASE, phase)
+            self.assertEqual(len(nutrients), 3, phase)                       # 2026-09-24
             for nutrient, candidates in nutrients.items():
-                self.assertGreaterEqual(len(candidates), plan.MIN_CANDIDATES, (phase, nutrient))
+                self.assertGreaterEqual(len(candidates), 5, (phase, nutrient))   # 2026-09-24
 
     def test_every_entry_is_placeholder_with_no_evidence_label(self):
         labels = set(plan.EVIDENCE_RANK)
@@ -198,7 +204,7 @@ class TestStubData(unittest.TestCase):
     def test_category_tags_from_fixed_set_and_pork_is_meat(self):
         for entry in self.entries:
             self.assertIsInstance(entry["categories"], list)
-            self.assertTrue(set(entry["categories"]) <= set(plan.CATEGORIES), entry)
+            self.assertTrue(set(entry["categories"]) <= set(CATEGORIES), entry)
             if "pork" in entry["categories"]:
                 self.assertIn("meat", entry["categories"])
         self.assertTrue(any("pork" in e["categories"] for e in self.entries))
@@ -265,7 +271,7 @@ class TestResolveCandidates(unittest.TestCase):
         self.assertIsNone(res.alternative)
 
     def test_untagged_food_never_excluded(self):
-        res = plan.resolve_candidates([food("spinach")], plan.CATEGORIES, [], False, "autumn")
+        res = plan.resolve_candidates([food("spinach")], CATEGORIES, [], False, "autumn")
         self.assertEqual(res.chosen["food"], "spinach")
 
     def test_single_candidate_has_no_alternative(self):
@@ -497,14 +503,14 @@ class TestOutput(Workspace):
         out, _ = self.run_plan(*self.OVULATORY)
         md = self.markdown()
         for text in (out, md):
-            self.assertEqual(text.count(plan.DISCLAIMER), 1)
+            self.assertEqual(text.count(DISCLAIMER), 1)
             self.assertEqual(text.count("[placeholder]"), 3)
 
     def test_every_suggestion_states_its_evidence_tier_in_both(self):
         data = json.loads((ROOT / "nutrition_rules.json").read_text())
-        for elapsed in (0, 8, 14, 20):                       # Menstrual, Follicular, Ovulatory, Luteal
+        # 28-day cycle: days 1, 9, 15, 21 fall in Menstrual 1-5, Follicular 6-12, Ovulatory 13-15, Luteal 16-28.
+        for elapsed, phase in ((0, "Menstrual"), (8, "Follicular"), (14, "Ovulatory"), (20, "Luteal")):
             out, _ = self.run_plan("--last-period", days_ago(elapsed), "--cycle-length", "28")
-            phase = plan.phase_for_day(elapsed + 1, 28)
             md = self.markdown()
             for nutrient, claim in data["evidence"][phase].items():
                 line = next(l for l in out.splitlines() if l.startswith(f"  {nutrient}: "))
@@ -546,7 +552,7 @@ class TestOutput(Workspace):
     def test_unknown_exclude_category_lists_valid_ones(self):
         err = self.run_error(*self.OVULATORY, "--exclude", "diary")
         self.assertIn("diary", err)
-        for category in plan.CATEGORIES:
+        for category in CATEGORIES:
             self.assertIn(category, err)
         self.assertFalse((self.dir / "nutrients.md").exists())
         self.assertFalse((self.dir / "history.json").exists())
