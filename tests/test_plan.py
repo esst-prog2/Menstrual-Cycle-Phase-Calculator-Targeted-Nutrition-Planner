@@ -57,7 +57,7 @@ def markdown_row(md, nutrient):
 
 def food(name, cats=(), seasons=("winter", "spring", "summer", "autumn"), **extra):
     return {"food": name, "categories": list(cats), "seasons": list(seasons),
-            "placeholder": True, "seasons_placeholder": True, **extra}
+            "placeholder": True, **extra}
 
 
 class Workspace(unittest.TestCase):
@@ -108,6 +108,14 @@ class Workspace(unittest.TestCase):
 # ------------------------------------------------------------------ 1. setup
 
 class TestSetup(unittest.TestCase):
+    def test_python_older_than_3_10_stops_with_clear_message(self):
+        fake_39 = ("import runpy, sys; sys.version_info = (3, 9, 6, 'final', 0); "
+                   f"runpy.run_path({str(ROOT / 'plan.py')!r}, run_name='__main__')")
+        result = subprocess.run([sys.executable, "-c", fake_39, "--help"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stderr, "plan.py needs Python 3.10 or newer; this is Python 3.9.\n")
+        self.assertEqual(result.stdout, "")
+
     def test_help_lists_all_flags(self):
         result = subprocess.run([sys.executable, str(ROOT / "plan.py"), "--help"],
                                 capture_output=True, text=True, check=True)
@@ -233,17 +241,16 @@ class TestStubData(unittest.TestCase):
                 self.assertGreaterEqual(len(candidates), 5, (phase, nutrient))   # 2026-09-24
 
     def test_every_entry_is_placeholder_with_no_evidence_label(self):
-        labels = set(plan.EVIDENCE_RANK)
+        labels = set(plan.EVIDENCE_TIERS)
         for entry in self.entries:
             self.assertIs(entry["placeholder"], True)
             self.assertNotIn("evidence", entry)
             self.assertFalse(labels & {str(v) for v in entry.values()}, entry)
 
-    def test_every_entry_has_placeholder_season(self):
+    def test_every_entry_has_a_season(self):
         for entry in self.entries:
             self.assertTrue(entry["seasons"], entry)
             self.assertTrue(set(entry["seasons"]) <= {"winter", "spring", "summer", "autumn"})
-            self.assertIs(entry["seasons_placeholder"], True)
 
     def test_category_tags_from_fixed_set_and_pork_is_meat(self):
         for entry in self.entries:
@@ -285,7 +292,7 @@ class TestEvidenceTiers(unittest.TestCase):
     def test_every_claim_has_a_tier(self):
         self.assertEqual(len(self.claims), 12)
         for claim in self.claims:
-            self.assertIn(claim["tier"], plan.EVIDENCE_RANK)
+            self.assertIn(claim["tier"], plan.EVIDENCE_TIERS)
 
     def test_seven_of_twelve_claims_have_a_medical_source(self):
         sourced = [c for c in self.claims if c["source"] is not None]
@@ -295,7 +302,7 @@ class TestEvidenceTiers(unittest.TestCase):
 
     def test_tier_counts_match_evidence_md(self):
         tiers = [c["tier"] for c in self.claims]
-        self.assertEqual({t: tiers.count(t) for t in plan.EVIDENCE_RANK},
+        self.assertEqual({t: tiers.count(t) for t in plan.EVIDENCE_TIERS},
                          {"Strong": 2, "Moderate": 4, "Weak": 1, "Speculative": 5})
 
     def test_each_claim_has_its_spike_tier(self):
@@ -470,7 +477,7 @@ class TestResolveCandidates(unittest.TestCase):
         cands = [food("off", seasons=["summer"]), food("on", seasons=["autumn"])]
         res = plan.resolve_candidates(cands, [], [], True, "autumn")
         self.assertEqual(res.chosen["food"], "off")
-        self.assertEqual(res.alternative["food"], "on")
+        self.assertIsNone(res.alternative)                     # the swap note names no food
         self.assertTrue(res.swapped)
 
     def test_prefer_alternative_without_alternative_raises(self):
@@ -818,7 +825,17 @@ class TestOutput(Workspace):
 
 # ------------------------------------------------------------ 7. gitignore
 
-class TestGitignore(Workspace):
+def is_git_checkout(path):
+    try:
+        result = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], cwd=path,
+                                capture_output=True, text=True)
+    except FileNotFoundError:                                  # git not installed
+        return False
+    return result.stdout.strip() == "true"
+
+
+@unittest.skipUnless(is_git_checkout(ROOT), "not a git checkout, so .gitignore cannot be checked")
+class TestGitignore(unittest.TestCase):
     def test_history_files_ignored(self):
         for name in ("history.json", "history.json.bak", "history.json.2026-09-25.bak",
                      "history.json.2026-09-25-2.bak", "nutrients.md"):

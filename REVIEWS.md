@@ -585,3 +585,90 @@ Specs updated:
 a food in the data therefore resets that food's rotation silently.
 
 **Result.** All 90 tests pass. `openspec validate --specs` passes, 4 of 4.
+
+## Review 7: things nobody chose
+
+**Date:** 2026-10-14
+**Scope:** every import in `plan.py` and the tests, the tools the project relies on, and
+dead code. This includes two items deferred from Review 3: `EVIDENCE_RANK`'s numbers and
+the `rules_path` parameter.
+
+### What we looked for
+
+- **Dependencies:** for each one, does it exist, is it used, and is its version pinned
+  anywhere?
+- **Dead code:** functions, parameters, constants, branches or test helpers that nothing
+  uses.
+
+### What we found
+
+**Imports.** All are standard library, and all are used. There are no third-party
+packages and no requirements file, as decided on 2026-09-25.
+
+**Tools:**
+
+| Tool | Finding |
+|---|---|
+| Python | "3.10 or newer" was stated in README, but not pinned, checked or tested anywhere; only 3.14 had ever been run. macOS's `/usr/bin/python3` is 3.9.6, and there `plan.py` crashed with `TypeError: unsupported operand type(s) for \|`. |
+| git | `TestGitignore` needs a git checkout. In a copy without `.git` (for example a zip download), it failed instead of skipping. |
+| OpenSpec | 1.13.0, installed globally with npm; it needs Node. Not pinned anywhere: the version appeared only as `generatedBy` in the files under `.claude/`. README and AGENTS.md didn't mention it. |
+| Node | v24.21.0 here, only as OpenSpec's runtime. Not pinned. |
+| uv | Installed on this machine but not used by the project. |
+
+**Dead code:**
+
+| # | What | Finding |
+|---|---|---|
+| D1 | `EVIDENCE_RANK` | Its numbers 3/2/1/0 were unused; only its keys were. |
+| D2 | `main(rules_path=…)` | Never passed by anything. |
+| D3 | `plan_slot(nutrient)` | Never read inside the function. |
+| D4 | `Resolution.alternative` on a swap | Set, but never read by the program since Review 4's swap note; only one test read it. |
+| D5 | The last `raise` in `phase_for_day` | Can't happen through `main`. |
+| D6 | The `{}` default in `evidence.get(phase, {})` | Unreachable since Review 5's phase check. |
+| D7 | `"seasons_placeholder"` on all 60 foods | Never read by any code; only a test checked it. |
+| D8 | Two `.gitkeep` files | Their folders have real content now. |
+| D9 | `openspec/config.yaml` | Only `schema` was set; the rest was the untouched template, which nobody chose. |
+| D10 | `TestGitignore` inherits `Workspace` | Made a temporary folder it never used (also noted in Review 1). |
+
+### What we did
+
+All of these decisions are the user's unless marked otherwise. Every decision is logged
+in PLANNING_LOG.md under 2026-10-14.
+
+- **Python version check.** `plan.py` checks `sys.version_info` right after `import sys`,
+  before the other imports and the `dict | None` annotations. On anything older than
+  3.10 it stops with "plan.py needs Python 3.10 or newer; this is Python 3.9." and exit
+  code 1.
+  - Checked for real with macOS's `/usr/bin/python3` 3.9.6.
+  - New test: `test_python_older_than_3_10_stops_with_clear_message`. It fakes 3.9 in a
+    subprocess (Claude's method).
+- **`TestGitignore`.** It is skipped when the folder isn't a git checkout or git isn't
+  installed, and it is now a plain `unittest.TestCase` (D10). Checked in a copy without
+  `.git`: 1 skipped, 90 passed.
+- **README.** It now says the specs were written with OpenSpec 1.13.0, which needs
+  Node.js 20.19 or newer (OpenSpec's own requirement), and that OpenSpec is only needed
+  for the spec workflow, not to run `plan.py` or its tests. The Requirements section also
+  describes the startup check, names the test command, and drops a stale line link into
+  `plan.py` (Claude's additions).
+- **Dead code removed:**
+  - **D1:** `EVIDENCE_RANK` is now `EVIDENCE_TIERS`, the tier names only (the rename is
+    Claude's).
+  - **D2:** `main(rules_path=…)` removed.
+  - **D3:** `plan_slot(nutrient)` removed.
+  - **D4:** a swap no longer stores an alternative. `test_prefer_alternative_swaps` now
+    checks that `alternative` is `None`.
+  - **D6:** the unreachable default is gone; the code now reads `evidence[phase]`
+    directly.
+  - **D8:** both `.gitkeep` files deleted.
+- **D5, kept as a guard.** It would only fire if the phase boundaries were broken.
+- **D7, `seasons_placeholder` removed.** It is gone from all 60 foods in
+  `nutrition_rules.json`; a script checked that nothing else in the data changed. It is
+  also gone from the test helper `food()` and from `TestStubData`, where the test is
+  renamed `test_every_entry_has_a_season`.
+
+  This **replaces the 2026-09-24 decision** that every seasonal tag is also marked
+  placeholder. Reason: each food's `placeholder` flag and its `[placeholder]` label
+  already cover that food's seasons, and no code ever read the separate flag.
+- **D9.** `openspec/config.yaml` now holds only `schema: spec-driven`.
+
+**Result.** All 91 tests pass. `openspec validate --specs` passes, 4 of 4.

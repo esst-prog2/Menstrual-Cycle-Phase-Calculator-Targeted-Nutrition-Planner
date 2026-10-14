@@ -4,11 +4,17 @@ Usage: python plan.py --last-period YYYY-MM-DD --cycle-length N
                       [--exclude CATEGORY ...] [--prefer-alternative NUTRIENT]
 """
 
+import sys
+
+# Checked before anything else runs: older versions fail on the `dict | None` syntax below.
+if sys.version_info < (3, 10):
+    sys.exit(f"plan.py needs Python 3.10 or newer; this is Python "
+             f"{sys.version_info[0]}.{sys.version_info[1]}.")
+
 import argparse
 import json
 import re
 import shutil
-import sys
 from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
@@ -29,7 +35,7 @@ NO_REPEAT_CYCLES = 2
 HISTORY_ENTRIES = NO_REPEAT_CYCLES + 1   # current cycle plus the 2 before it
 # Tiers for the per-claim "evidence" map in nutrition_rules.json. Foods are not ranked by
 # evidence: no per-food evidence data exists yet.
-EVIDENCE_RANK = {"Strong": 3, "Moderate": 2, "Weak": 1, "Speculative": 0}
+EVIDENCE_TIERS = ["Strong", "Moderate", "Weak", "Speculative"]
 
 DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
               "stub database that has not been evidence-reviewed.")
@@ -120,7 +126,7 @@ def season_for(month):
 @dataclass
 class Resolution:
     chosen: dict | None
-    alternative: dict | None = None
+    alternative: dict | None = None   # named in a "chosen over" note; None when swapped
     reason: str | None = None     # why the alternative lost; None on a full tie
     forced_repeat: bool = False
     swapped: bool = False
@@ -184,7 +190,7 @@ def resolve_candidates(candidates, exclusions, recent_foods, prefer_alternative,
     if prefer_alternative:
         if runner_up is None:
             raise NoAlternativeError("only one candidate remains")
-        chosen, alternative = runner_up, top
+        chosen = runner_up
     elif kept is not None and kept is not top:
         chosen = kept
     else:
@@ -261,10 +267,10 @@ def load_rules(path, warn):
             warn(f"Warning: {phase} has {len(nutrients)} nutrients "
                  f"(expected {NUTRIENTS_PER_PHASE}).")
         for nutrient, candidates in nutrients.items():
-            claim = evidence.get(phase, {}).get(nutrient)
-            if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_RANK:
+            claim = evidence[phase].get(nutrient)
+            if not isinstance(claim, dict) or claim.get("tier") not in EVIDENCE_TIERS:
                 raise InputError(f"{name}: {phase}/{nutrient} has no evidence tier "
-                                 f"(expected one of {', '.join(EVIDENCE_RANK)})")
+                                 f"(expected one of {', '.join(EVIDENCE_TIERS)})")
             if (claim.get("source") is None) != (claim["tier"] == "Speculative"):
                 raise InputError(f"{name}: {phase}/{nutrient} is {claim['tier']}, so its "
                                  "source must be " + ("null" if claim["tier"] == "Speculative" else "named"))
@@ -335,7 +341,7 @@ class Suggestion:
     evidence: dict      # {"tier": ..., "source": ... or None}
 
 
-def plan_slot(nutrient, candidates, entries, cycle_start, exclusions, prefer, season):
+def plan_slot(candidates, entries, cycle_start, exclusions, prefer, season):
     """Resolve one nutrient slot against its history entries (most recent first).
 
     Returns (Resolution, new_entries). new_entries is None when history for
@@ -432,7 +438,7 @@ def build_parser():
     return parser
 
 
-def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, err=sys.stderr):
+def main(argv=None, today=None, workdir=HERE, out=sys.stdout, err=sys.stderr):
     parser = build_parser()
     args = parser.parse_args(argv)
     today = today or date.today()
@@ -442,7 +448,7 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
     try:
         day, is_late = cycle_day(args.last_period, today, args.cycle_length)
         phase = phase_for_day(day, args.cycle_length)
-        rules, evidence = load_rules(rules_path or workdir / "nutrition_rules.json", warn)
+        rules, evidence = load_rules(workdir / "nutrition_rules.json", warn)
         nutrients = rules[phase]
 
         prefer = None
@@ -462,7 +468,7 @@ def main(argv=None, today=None, workdir=HERE, rules_path=None, out=sys.stdout, e
         phase_history = dict(history.get(phase, {}))
         for nutrient, candidates in nutrients.items():
             try:
-                res, new_entries = plan_slot(nutrient, candidates, phase_history.get(nutrient, []),
+                res, new_entries = plan_slot(candidates, phase_history.get(nutrient, []),
                                              cycle_start, args.exclude, nutrient == prefer, season)
             except NoAlternativeError as exc:
                 raise InputError(f"--prefer-alternative {args.prefer_alternative}: no alternative "

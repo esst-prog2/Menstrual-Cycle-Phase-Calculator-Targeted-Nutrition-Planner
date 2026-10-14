@@ -11,9 +11,15 @@ Menstrual Cycle Phase Calculator and Targeted Nutrition Planner
 > foods, not as medical or nutrition advice. See Section 4.
 
 ## Requirements
-Python 3.10 or newer. `plan.py` uses the `dict | None` type-union syntax
-(e.g. [plan.py:109](plan.py#L109)), which older Python versions reject.
-There are no third-party dependencies.
+Python 3.10 or newer. `plan.py` uses the `dict | None` type-union syntax,
+which older Python versions reject, so it checks the version at startup and
+stops with a clear message on anything older (macOS's built-in
+`/usr/bin/python3` is 3.9). There are no third-party dependencies; the tests
+use Python's built-in `unittest` (`python3 -m unittest discover -s tests`).
+
+The specs in `openspec/` were written with [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+1.13.0, which needs Node.js 20.19 or newer. OpenSpec is only needed for the spec workflow
+(proposing, validating and archiving changes), not to run `plan.py` or its tests.
 
 ## 1. The Demo
 I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints the nutrients the rulebook pairs with that phase (like fiber and zinc, both rated Speculative in [EVIDENCE.md](EVIDENCE.md)) and, for each one, a food that contains it, for example "zinc: pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
