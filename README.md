@@ -11,9 +11,15 @@ Menstrual Cycle Phase Calculator and Targeted Nutrition Planner
 > foods, not as medical or nutrition advice. See Section 4.
 
 ## Requirements
-Python 3.10 or newer. `plan.py` uses the `dict | None` type-union syntax
-(e.g. [plan.py:109](plan.py#L109)), which older Python versions reject.
-There are no third-party dependencies.
+Python 3.10 or newer. `plan.py` uses the `dict | None` type-union syntax,
+which older Python versions reject, so it checks the version at startup and
+stops with a clear message on anything older (macOS's built-in
+`/usr/bin/python3` is 3.9). There are no third-party dependencies; the tests
+use Python's built-in `unittest` (`python3 -m unittest discover -s tests`).
+
+The specs in `openspec/` were written with [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+1.13.0, which needs Node.js 20.19 or newer. OpenSpec is only needed for the spec workflow
+(proposing, validating and archiving changes), not to run `plan.py` or its tests.
 
 ## 1. The Demo
 I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints the nutrients the rulebook pairs with that phase (like fiber and zinc, both rated Speculative in [EVIDENCE.md](EVIDENCE.md)) and, for each one, a food that contains it, for example "zinc: pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
@@ -47,14 +53,8 @@ I open my terminal and run `python plan.py --last-period <a date 14 days ago> --
 (3 nutrients × 4 phases = 12). Each pair was checked against PubMed,
 Cochrane, ACOG, NHS and EFSA for a source supporting that nutrient in that
 specific phase. Full citations, DOIs and verbatim quotes are in
-[EVIDENCE.md](EVIDENCE.md).
-
-| Tier | Count | Pairs |
-|---|---|---|
-| Strong | 2 / 12 | Menstrual Iron, Luteal Calcium |
-| Moderate | 4 / 12 | Menstrual Vitamin C, Menstrual Magnesium, Luteal Magnesium, Luteal Vitamin B6 |
-| Weak | 1 / 12 | Ovulatory Omega-3 |
-| Speculative | 5 / 12 | Follicular Folate, Protein, Vitamin E; Ovulatory Fiber, Zinc |
+[EVIDENCE.md](EVIDENCE.md), which also has [the tier of each pair and the
+count per tier](EVIDENCE.md#summary).
 
 What this means for how the tool's output should be read:
 
@@ -83,16 +83,8 @@ For each phase-nutrient rule, the following is recorded in `EVIDENCE.md`:
    consensus guideline) — not a wellness blog unless that blog cites a
    traceable primary source. I was planning to review the literature with AI and
    base the recommendations based on these.
-3. **Evidence strength**, one of:
-   - **Strong** — supported by systematic review/meta-analysis with
-     consistent findings, or a well-established physiological mechanism
-     (e.g. iron loss during menstruation).
-   - **Moderate** — some supporting evidence, but reviews note inconsistency
-     or lack of consensus.
-   - **Weak** — based on a single small study, or a narrative (non-systematic)
-     review only.
-   - **Speculative** — appears in popular "cycle syncing" content but has no
-     traceable primary study.
+3. **Evidence strength**: Strong, Moderate, Weak or Speculative, as defined
+   in [EVIDENCE.md](EVIDENCE.md#how-claims-were-graded).
 4. Rules labeled **Weak** or **Speculative** are still included in the tool
    (so the project isn't limited to only well-studied phases), but this label
    is surfaced to the user in the terminal output and in `nutrients.md`,
@@ -120,16 +112,18 @@ no rule is added to the JSON without a corresponding entry in
   ## 7. Constraint priorities
   1. **Exclusions (hard constraint, never violated).** An excluded ingredient
    is never shown, regardless of how well it fits other constraints.
-2. **Nutrient coverage for the active phase (soft constraint, highest
-   priority).** This is the project's reason for existing. Within this
-   constraint, a rule labeled Strong evidence (see "Evidence Basis" section)
-   is protected before a Weak-evidence rule when a choice must be made.
-3. **No-repeat-within-2-cycles (soft constraint).** Keeps the suggestions from
-   feeling identical cycle to cycle, but yields to nutrient coverage when
-   the two conflict.
-4. **Seasonality (soft constraint, lowest priority).** Preferred when it
-   doesn't cost anything on the constraints above it, but the first thing
-   sacrificed when it conflicts with them.
+2. **No-repeat-within-2-cycles (soft constraint, highest priority).** Keeps
+   the suggestions from feeling identical cycle to cycle.
+3. **Seasonality (soft constraint, lowest priority).** Preferred when it
+   doesn't cost anything on the constraint above it, but the first thing
+   sacrificed when the two conflict.
+
+Candidates that rank equally keep their order in `nutrition_rules.json`.
+Which nutrients appear is decided by the phase, and each nutrient's evidence
+tier (see "Evidence Basis" section) is shown next to it. Foods within a slot
+are not ranked by evidence, because the stub data has no per-food evidence.
+Future work: once real per-food data exists, prioritize foods by evidence or
+by how rich they are in the nutrient.
 
 **How conflicts are resolved:** ingredients are first filtered to only those
 that satisfy the hard constraint (exclusions). Among the remaining valid

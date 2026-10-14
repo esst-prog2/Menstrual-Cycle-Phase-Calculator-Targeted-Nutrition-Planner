@@ -70,8 +70,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "spinach",
@@ -80,8 +79,7 @@
             "spring",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "beef",
@@ -94,8 +92,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "sardines",
@@ -108,8 +105,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "tofu",
@@ -122,8 +118,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Vitamin C": [
@@ -133,8 +128,7 @@
           "seasons": [
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "bell peppers",
@@ -142,8 +136,7 @@
           "seasons": [
             "summer"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "strawberries",
@@ -152,8 +145,7 @@
             "spring",
             "summer"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "broccoli",
@@ -162,8 +154,7 @@
             "autumn",
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "kiwi",
@@ -172,8 +163,7 @@
             "winter",
             "spring"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Magnesium": [
@@ -186,8 +176,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "almonds",
@@ -200,8 +189,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "black beans",
@@ -212,8 +200,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "cashews",
@@ -226,8 +213,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "whole-wheat bread",
@@ -240,8 +226,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ]
     },
@@ -256,8 +241,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "asparagus",
@@ -265,8 +249,7 @@
           "seasons": [
             "spring"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "avocado",
@@ -277,8 +260,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "edamame",
@@ -288,8 +270,7 @@
           "seasons": [
             "summer"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "brussels sprouts",
@@ -298,8 +279,7 @@
             "autumn",
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Protein": [
@@ -314,8 +294,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "greek yogurt",
@@ -328,8 +307,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "chicken",
@@ -342,8 +320,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "tempeh",
@@ -356,8 +333,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "lentils",
@@ -368,8 +344,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Vitamin E": [
@@ -382,8 +357,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "almonds",
@@ -396,8 +370,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "hazelnuts",
@@ -407,8 +380,7 @@
           "seasons": [
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "peanut butter",
@@ -421,8 +393,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "avocado",
@@ -433,8 +404,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ]
     },
@@ -446,8 +416,7 @@
           "seasons": [
             "summer"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "pears",
@@ -455,8 +424,7 @@
           "seasons": [
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "oats",
@@ -469,8 +437,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "chia seeds",
@@ -481,8 +448,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "split peas",
@@ -493,8 +459,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Zinc": [
@@ -507,8 +472,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "oysters",
@@ -519,8 +483,7 @@
             "autumn",
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "beef",
@@ -533,8 +496,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "pork loin",
@@ -548,8 +510,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "cheddar cheese",
@@ -562,8 +523,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Omega-3": [
@@ -578,8 +538,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "walnuts",
@@ -592,8 +551,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "flaxseeds",
@@ -604,8 +562,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "chia seeds",
@@ -616,8 +573,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "mackerel",
@@ -630,8 +586,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ]
     },
@@ -644,8 +599,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "pumpkin seeds",
@@ -656,8 +610,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "almonds",
@@ -670,8 +623,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "black beans",
@@ -682,8 +634,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "tahini",
@@ -696,8 +647,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Calcium": [
@@ -712,8 +662,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "sardines",
@@ -726,8 +675,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "kale",
@@ -736,8 +684,7 @@
             "autumn",
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "calcium-set tofu",
@@ -750,8 +697,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "sesame seeds",
@@ -764,8 +710,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ],
       "Vitamin B6": [
@@ -778,8 +723,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "bananas",
@@ -790,8 +734,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "salmon",
@@ -804,8 +747,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "potatoes",
@@ -814,8 +756,7 @@
             "autumn",
             "winter"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         },
         {
           "food": "turkey",
@@ -828,8 +769,7 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true,
-          "seasons_placeholder": true
+          "placeholder": true
         }
       ]
     }

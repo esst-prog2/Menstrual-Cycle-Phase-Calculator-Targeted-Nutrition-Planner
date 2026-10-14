@@ -25,7 +25,7 @@ The system SHALL reject a `--last-period` date that is in the future, printing a
 - **THEN** the system stops and prints an error saying the date is invalid
 
 ### Requirement: Cycle length required with validated range
-`--cycle-length` SHALL be required with no default value. It SHALL be validated as an integer from 21 to 38 days inclusive; a value outside that range SHALL be rejected with an error stating the supported range (21–38).
+`--cycle-length` SHALL be required with no default value. It SHALL be validated as a whole number written with the digits 0–9 only (no spaces, signs, underscores or other digit characters), from 21 to 38 days inclusive; a value outside that range SHALL be rejected with an error stating the supported range (21–38).
 
 #### Scenario: Cycle length omitted
 - **WHEN** `--cycle-length` is not provided

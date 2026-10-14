@@ -55,7 +55,7 @@
 FAIL: test_each_claim_has_its_spike_tier (test_plan.TestEvidenceTiers.test_each_claim_has_its_spike_tier)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/Users/itirbozdag/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
+  File "[project folder, removed for privacy]/tests/test_plan.py", line 244, in test_each_claim_has_its_spike_tier
     self.assertEqual(actual, self.SPIKE_TIERS)
     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: {('Me[16 chars]): 'Speculative', ('Menstrual', 'Vitamin C'): [387 chars]ate'} != {('Me[16 chars]): 'Strong', ('Menstrual', 'Vitamin C'): 'Mode[387 chars]ate'}
@@ -77,42 +77,63 @@ Ran 65 tests in 0.083s
 OK
 ```
 
-2026-10-08 — User's prediction, recorded verbatim before the real run (program not yet run). Decided by: user.
-
-Before running: I am on my period, so I expect the Menstrual phase, with Iron (evidence: Strong), Vitamin C (Moderate) and Magnesium (Moderate). All three should show a source, none "no supporting source found".
-
-2026-10-08 — Real run, done by the user in their own terminal: `python plan.py --last-period 2026-10-06 --cycle-length 28`. Decided by: user.
-
-Terminal output:
-
-```
-PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.
-
-Day 3 of your 28-day cycle: Menstrual phase
-
-Nutrients that matter now, and a food that contains each:
-  Iron: lentils [placeholder] (evidence: Strong)
-  Vitamin C: broccoli [placeholder] (evidence: Moderate)
-    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
-  Magnesium: pumpkin seeds [placeholder] (evidence: Moderate)
-```
-
-nutrients.md:
-
-```
-# Nutrients for the Menstrual phase
-
-Generated 2026-10-08 - day 3 of a 28-day cycle.
-
-> **PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed.**
-
-| Nutrient | Evidence | Food | Notes |
-| --- | --- | --- | --- |
-| Iron | Strong - Cochrane CD009747 (2016); NHS | lentils [placeholder] |  |
-| Vitamin C | Moderate - EFSA 2014 opinion; Cook & Reddy 2001 | broccoli [placeholder] | chosen over oranges - out of season; swap with --prefer-alternative vitamin c |
-| Magnesium | Moderate - Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020 | pumpkin seeds [placeholder] |  |
-```
-
-2026-10-08 — The real run matched the prediction: Menstrual phase, Iron (Strong), Vitamin C (Moderate), Magnesium (Moderate), all three with a source in nutrients.md. Decided by: user.
+2026-10-08 — A real run of the tool by the user, with the user's prediction written down beforehand, was logged here, and the run matched the prediction. Its details (the prediction text, the command with its dates and cycle length, and the terminal and nutrients.md output) were removed on 2026-10-14 for privacy (Review 9). Decided by: user.
 2026-10-08 — Open gap, not yet checked by any test: Ovulatory Fiber is still suggested although EVIDENCE.md says the evidence points against it. Noted by: user; no decision yet.
 2026-10-08 — Open gap, not yet checked by any test: the evidence label does not tell the user that most sources are for the whole cycle or for supplements, not for eating the food in this one phase. Noted by: user; no decision yet.
+2026-10-14 — Homework 6 is a code review of the whole repo, one topic per commit, recorded in REVIEWS.md (what we looked for, what we found, what we did). Review 1 (tests): expected phases and the decided values (3 nutrients, 5 candidates, 11 categories, disclaimer) are now literals in the tests; exact note wording is kept as decided in design.md; the per-food evidence ranking path is deferred to the spec-drift and dead-code reviews. Decided by: user.
+2026-10-14 — The placeholder disclaimer wording is accepted as decided: "PLACEHOLDER DATA - not nutrition advice. Every food below comes from a stub database that has not been evidence-reviewed." Decided by: user.
+2026-10-14 — Review 2 (spec drift): three spec violations are fixed in code, each with a test: a same-cycle re-run reuses the saved pick unless --exclude or --prefer-alternative invalidates it; a forced repeat gets the repeat note, also after a swap; a corrupt history.json backup never overwrites an earlier one and carries the date in its name. Decided by: user.
+2026-10-14 — Foods are no longer ranked by a per-food evidence label (the data has none, so it never did anything): the ranking code, its test and the "weaker evidence" note are removed. Within a slot the ranking is no repeat, then season; the nutrient-selection spec is updated to match. Decided by: user.
+2026-10-14 — Future work: once real per-food data exists, prioritize foods within a slot by evidence or by how rich they are in the nutrient. Idea by: user.
+2026-10-14 — If a phase in nutrition_rules.json does not have exactly 3 nutrients (NUTRIENTS_PER_PHASE), the tool prints a terminal warning at load time and still runs, like the 5-candidate warning. Decided by: user.
+2026-10-14 — The rotation-history spec now says a slot with fewer than 5 candidates gives a warning, not a failure, matching the 2026-09-25 decision and the code. Decided by: user.
+2026-10-14 — design.md's alternative-note template uses a plain hyphen ("chosen over <alt> - <reason>"), matching the code and tests. Decided by: user.
+2026-10-14 — Behaviour the code already had is now in the specs: Northern Hemisphere meteorological season from today's month, the disclaimer banner, the swap note as a fifth note type, a swap dropped when its food is later excluded, an error when --prefer-alternative names a nutrient not tracked this phase, and case-insensitive --exclude and --prefer-alternative. Decided by: user.
+2026-10-14 — Backup name format: history.json.YYYY-MM-DD.bak, then -2, -3, … for further backups on the same day; .gitignore uses history.json*.bak to cover old and new names. Decided by: Claude.
+2026-10-14 — When a same-cycle re-run reuses a saved pick that a fresh ranking would no longer put first (e.g. the season changed), no "chosen over" note is shown, since no current ranking reason favours it. Decided by: Claude.
+2026-10-14 — The removed evidence-ranking test is replaced by one checking that a per-food evidence label does not change the ranking, so the removal stays protected. Decided by: Claude.
+2026-10-14 — README §7 now matches the spec and code: within a slot, no repeat, then season; evidence-based food ranking is future work. Decided by: user.
+2026-10-14 — nutrition_rules.json is read from, and history.json, its backups and nutrients.md are written to, the folder that contains plan.py, whatever folder the tool is run from (matches the README demo, "Next to the script"); added to the cli-output spec. Decided by: user.
+2026-10-14 — The current user-visible wording is accepted as decided: NO_SOURCE "no supporting source found"; the --prefer-alternative errors "every candidate is excluded" and "only one candidate remains"; the output headers "Nutrients that matter now, and a food that contains each:", "# Nutrients for the <phase> phase" and "Generated <date> - day <N> of a <length>-day cycle." Decided by: user.
+2026-10-14 — The rank key's parts get names (RankKey: repeats, out_of_season), so _deciding_reason no longer depends on their positions; no behaviour change. Decided by: user.
+2026-10-14 — The rank key's names are implemented as a NamedTuple, which still sorts like a plain tuple, so the ranking is unchanged. Decided by: Claude.
+2026-10-14 — Review 4: plan_slot is rewritten to follow one rule: "Within a cycle, keep the saved pick while its food is still allowed. Otherwise pick again and replace that cycle's entry." The forced-repeat flag is worked out in one place, and plan_slot uses resolve_candidates's exclusion filter instead of a second copy. No other behaviour change. Decided by: user.
+2026-10-14 — Review 4: the grace rule (a day past the cycle length is Luteal and possibly late) lives in one place, used by both cycle_day and phase_for_day. Decided by: user.
+2026-10-14 — Review 4: the swap note is simplified to "swapped in with --prefer-alternative", without naming the food it replaced, and is always shown when history says swapped: true. Tests added for both edge cases (the ranking later agrees with the swap; the current top food is not the one swapped away from). Decided by: user.
+2026-10-14 — Implementation of the plan_slot rewrite: resolve_candidates gets an optional keep argument (this cycle's saved pick, chosen while still allowed) and builds a single Resolution; the grace rule becomes a small is_late(day, cycle_length) function, and cycle_day's rejection check is written in terms of the same day. design.md's signature is updated to match. Decided by: Claude.
+2026-10-14 — Review 4 check: old and new plan.py were compared on 7,485 random runs (random rules, exclusions, swaps, dates); with the swap-note text removed, terminal output, nutrients.md and history.json were identical in every run. Decided by: Claude.
+2026-10-14 — Review 5: when nutrition_rules.json loads, it is checked against the code's lists — the four phases (in both "phases" and "evidence"), the season names, the 11 categories, and the nutrients in "phases" and "evidence" in both directions — and the tool stops with a clear error naming the problem. A category typo must never silently break --exclude. One test per check. Decided by: user.
+2026-10-14 — Review 5: the [placeholder] label comes from each food's "placeholder" flag, not unconditionally. Decided by: user.
+2026-10-14 — From now on the OpenSpec archive (openspec/changes/archive/) is frozen. Its design.md was edited in Reviews 2 and 4 before this decision. Decided by: user.
+2026-10-14 — Review 5: the repeat note is built from NO_REPEAT_CYCLES, and the "is this food a repeat?" check exists once. Decided by: user.
+2026-10-14 — Review 5: a test checks that a food appearing in several slots has the same categories and seasons everywhere. Decided by: user.
+2026-10-14 — Review 5: README's copied tier-count table and tier definitions are replaced by links to EVIDENCE.md (#summary and #how-claims-were-graded). Decided by: user.
+2026-10-14 — Review 5: the test helpers are tidied (one OVULATORY, real_rules(), nutrient_lines()/markdown_row(), use_slot_a(), Workspace.reset()); what the tests check must not change. Kept as they are: the spec/code/test copies of decided wording, the two renderers, evidence_label/evidence_detail, the data-flattening one-liners, and the deliberate literal copies in the tests. Decided by: user.
+2026-10-14 — Implementation details for Review 5: a SEASONS constant, with season_for() reading from it (same mapping for all 12 months); the forced-repeat flag is read from the top candidate's rank key, since repeats rank last; the placeholder label needs the flag to be exactly true; the new checks run inside load_rules, before history.json is read. Decided by: Claude.
+2026-10-14 — Review 5 check: the old and tidied test files were run against the same 12 deliberately broken copies of plan.py, and each copy was caught by exactly the same tests. Decided by: Claude.
+2026-10-14 — Review 5 follow-up: PHASES is derived from phase_ranges(), so the code has one list of phases. Decided by: user; deriving it in this direction (phase_ranges() is the rule, PHASES reads its keys) chosen by Claude.
+2026-10-14 — Review 5 follow-up: the tests check the literal text of the repeat, no-suitable-food and late-period notes instead of plan.py's constants. Decided by: user. Only the no-suitable-food wording is recorded as decided (2026-09-25 above); design.md has no note text, the spec only describes the repeat note, and only the phrase "period may be late" of the late note was decided — the full repeat and late wordings are copied from the current code, pending the user's confirmation.
+2026-10-14 — Review 6: when nutrition_rules.json loads, types are checked — "placeholder" must be true or false, "categories" and "seasons" must be lists — and the tool stops with a clear error otherwise. Decided by: user.
+2026-10-14 — Review 6: a slot with no foods in the data shows "no foods for this nutrient in the data"; the exclusions note appears only when exclusions really removed every food. The --prefer-alternative error gives the same distinction. Decided by: user.
+2026-10-14 — Review 6: a "swapped" value in history.json that is not true or false makes the file corrupt (backed up, with a warning). Decided by: user.
+2026-10-14 — Review 6: a history entry naming a food that is no longer in the data is kept as is (known limitation: renaming a food resets its rotation). Decided by: user.
+2026-10-14 — Review 6: every problem with a data file (rules file missing, unreadable, not UTF-8 or not JSON; missing fields; history.json that cannot be opened; nutrients.md or history.json that cannot be written) is one clear error message, not a traceback. Decided by: user.
+2026-10-14 — Review 6: --cycle-length accepts the digits 0-9 only (no "2_8", spaces or signs), and all files are read and written explicitly as UTF-8. The cli-output spec's "unreadable or corrupt" wording is aligned with the code. Decided by: user.
+2026-10-14 — Implementation details for Review 6: a missing "placeholder" also counts as not true or false; a history.json that cannot be opened at all stops the run and is left unchanged (no backup is possible); nutrients.md is now written before history.json, so a run whose output cannot be written does not advance the rotation; non-ASCII digits are rejected too; the corrupt-history warning text is unchanged; the UTF-8 test runs plan.py under a Latin-1 locale and is skipped where none exists. Decided by: Claude.
+2026-10-14 — The current repeat-note wording is accepted as decided: "repeated: no other candidate was available within the last 2 cycles" (the number comes from NO_REPEAT_CYCLES). Decided by: user.
+2026-10-14 — The current late-period note wording is accepted as decided: "period may be late: the cycle length has passed, so the Luteal phase is assumed until your next period starts". Decided by: user.
+2026-10-14 — Review 7: plan.py checks the Python version at startup, before anything else runs, and stops with a clear message on anything older than 3.10. Decided by: user.
+2026-10-14 — Review 7: TestGitignore is skipped when the folder is not a git checkout (or git is missing), and no longer inherits Workspace. Decided by: user.
+2026-10-14 — Review 7: README states that the specs were written with OpenSpec 1.13.0 (needs Node.js), which is only needed for the spec workflow, not to run plan.py or its tests. Decided by: user.
+2026-10-14 — Review 7: dead code removed — EVIDENCE_RANK's numbers (now EVIDENCE_TIERS, the tier names only), main's unused rules_path parameter, plan_slot's unused nutrient parameter, the alternative stored on a swap (its test updated), the unreachable {} default for evidence phases, and the two .gitkeep files. phase_for_day's unreachable raise is kept as a guard. Decided by: user.
+2026-10-14 — Review 7: "seasons_placeholder" is removed from all 60 foods in nutrition_rules.json and from its test. This replaces the 2026-09-24 decision that each seasonal tag is also marked placeholder: the food-level "placeholder" flag and its [placeholder] label already cover the food's seasons, and no code ever read the separate flag. Decided by: user.
+2026-10-14 — Review 7: openspec/config.yaml keeps only what is set (schema: spec-driven); the untouched template comments are deleted. Decided by: user.
+2026-10-14 — Implementation details for Review 7: the constant is renamed EVIDENCE_TIERS since it no longer ranks; the version test fakes Python 3.9 in a subprocess (checked for real against macOS's /usr/bin/python3 3.9.6); README also names Node.js 20.19+ (OpenSpec's own requirement), the test command, and drops its stale plan.py line link. Decided by: Claude.
+2026-10-14 — Review 8: one rule for an evidence claim's source, checked once at load: "source" is required on every claim; it is null for Speculative and a non-empty string for Weak, Moderate and Strong. The renderer uses the value as checked. Tests cover missing, empty and non-string sources. Decided by: user.
+2026-10-14 — Review 8: an unknown key on a food or an evidence claim stops the run at load with an error naming the key. This enforces the spec rule that foods carry no evidence label. Decided by: user.
+2026-10-14 — Review 8: the Review 6 known limitation (A4) also covers a renamed nutrient: its old history stays in history.json unread, and its rotation starts over. Decided by: user.
+2026-10-14 — Review 8: main takes out=None and err=None and resolves them to sys.stdout/sys.stderr when called, and the placeholder flag is read directly. Decided by: user.
+2026-10-14 — Implementation details for Review 8: a blank (whitespace-only) source also counts as empty; the allowed keys are FOOD_KEYS (food, categories, seasons, placeholder) and CLAIM_KEYS (tier, source); the existing "so its source must be named" message gains "(a non-empty string)". Decided by: Claude.
+2026-10-14 — Review 9: two earlier entries were rewritten for privacy, the one exception to the "never rewrite an earlier line" rule: the 2026-10-08 real-run entry (prediction, real command with dates and cycle length, and its output) is replaced by a short note saying a real run was logged and its details removed, and the local folder path (with the username) in the pasted 2026-10-08 mutation-check output is replaced by a placeholder. Reason: the repository is public, and these lines revealed real period timing and a username. Decided by: user.
+2026-10-14 — Review 9: AGENTS.md gets a rule at the top: never write real personal data (real dates, cycle details, usernames, folder paths) into any committed file; use invented dates in examples. Decided by: user.
+2026-10-14 — Review 9: git history is NOT rewritten. The removed details stay in earlier commits and in commit fde555e's message; the user knows this and accepts it — removing them from the current files is enough. Decided by: user.

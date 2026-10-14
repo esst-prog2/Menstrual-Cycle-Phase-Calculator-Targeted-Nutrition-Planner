@@ -13,6 +13,10 @@ Each of the four phases SHALL track exactly 3 nutrients, the same number in ever
 - **WHEN** the system generates suggestions for any phase
 - **THEN** exactly 3 nutrients are shown for that phase
 
+#### Scenario: Wrong nutrient count in the rules file
+- **WHEN** `nutrition_rules.json` gives a phase more or fewer than 3 nutrients
+- **THEN** the system prints a terminal warning naming that phase and the expected count of 3, and still runs, showing the nutrients the file has
+
 ### Requirement: Category tags for exclusion matching
 Every stub food entry SHALL carry a list of category tags drawn only from the fixed set: `dairy`, `eggs`, `gluten`, `nuts`, `peanuts`, `soy`, `fish`, `shellfish`, `sesame`, `meat`, `pork` — covering common allergens and foods avoided for diet or religious reasons. The list MAY be empty when no category applies (e.g. spinach: `[]`); a food with no tags is never removed by `--exclude`. A food MAY carry several tags; a pork food SHALL carry both `meat` and `pork`. Excluding a single food by name is not supported in v1 — category is the only exclusion mechanism.
 
@@ -29,15 +33,26 @@ Every stub food entry SHALL carry a list of category tags drawn only from the fi
 - **THEN** it carries both the `meat` and `pork` tags, so excluding either one matches it correctly
 
 ### Requirement: Constraint priority order
-Candidates for a nutrient slot SHALL be filtered and ranked in this order: (1) exclusions — hard, never violated; (2) nutrient coverage — highest-priority soft constraint; (3) no-repeat-within-2-cycles — soft; (4) seasonality — soft, lowest priority.
+Candidates for a nutrient slot SHALL be filtered and ranked in this order: (1) exclusions — hard, never violated; (2) no-repeat-within-2-cycles — soft; (3) seasonality — soft, lowest priority. Candidates that rank equally keep their order in `nutrition_rules.json`. Foods SHALL NOT be ranked by evidence or nutrient content, since the stub data has no per-food evidence; that is future work once real per-food data exists.
 
 #### Scenario: Excluded food never shown
 - **WHEN** a food matches an active `--exclude` value
 - **THEN** it is never shown for any nutrient slot, regardless of how well it would otherwise rank
 
+#### Scenario: A food-level evidence label does not affect ranking
+- **WHEN** a candidate carries an `evidence` field
+- **THEN** it is ranked the same as if the field were absent
+
 #### Scenario: No-repeat outranks seasonality
 - **WHEN** one candidate is in-season but repeats a recent pick, and another is out-of-season but new
 - **THEN** the out-of-season-but-new candidate is chosen, and the in-season-but-repeating candidate is shown as the alternative
+
+### Requirement: Season is derived from today's month
+The current season used for ranking SHALL be the Northern Hemisphere meteorological season of today's date: winter is December–February, spring March–May, summer June–August, autumn September–November.
+
+#### Scenario: Season boundary
+- **WHEN** the tool runs on 30 November and again on 1 December
+- **THEN** the first run uses autumn and the second uses winter
 
 ### Requirement: Single-candidate slot has no alternative note
 If exactly one valid candidate remains for a nutrient slot after filtering, it SHALL be used directly with no alternative note.
@@ -64,9 +79,17 @@ If two or more valid candidates remain and rank differently, the system SHALL sh
 - **WHEN** `--prefer-alternative zinc` is passed and the Zinc slot has an available alternative
 - **THEN** the alternative is shown instead of the original top-ranked candidate
 
+#### Scenario: Swap note shown while the swap lasts
+- **WHEN** a nutrient's food was swapped with `--prefer-alternative` earlier this cycle and is still allowed
+- **THEN** every later run in the cycle shows the swap note for it, even if the ranking now puts that food first, and the note does not name any other food
+
 #### Scenario: No alternative available for named nutrient
 - **WHEN** `--prefer-alternative` names a nutrient with no alternative available this cycle
 - **THEN** the system prints a clear error and does not swap or guess
+
+#### Scenario: Swapped food later excluded
+- **WHEN** a food swapped in earlier this cycle is removed by an `--exclude` on a later same-cycle run
+- **THEN** that nutrient's pick is recomputed under the exclusion, and the swap no longer applies
 
 ### Requirement: Empty candidate pool after exclusions
 If exclusions remove every candidate for a nutrient slot, the system SHALL NOT fail; it SHALL continue processing the other nutrients and mark that slot as having no suitable food.
@@ -75,15 +98,38 @@ If exclusions remove every candidate for a nutrient slot, the system SHALL NOT f
 - **WHEN** every candidate for a nutrient slot is removed by active `--exclude` values
 - **THEN** the system completes the run, shows the other nutrients normally, and marks the emptied slot as having no suitable food
 
+#### Scenario: Slot empty in the data
+- **WHEN** a nutrient slot has no foods at all in `nutrition_rules.json`
+- **THEN** the slot shows "no foods for this nutrient in the data" instead of the exclusions note, and `--prefer-alternative` for it fails with the same reason
+
 ### Requirement: Placeholder labeling
-Every food suggestion SHALL carry a placeholder label, since the foods in `nutrition_rules.json` are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
+A food suggestion SHALL carry a placeholder label exactly when its entry in `nutrition_rules.json` has `"placeholder": true`. Every stub food has that flag, since the foods are not evidence-reviewed. No stub food entry SHALL carry an evidence-strength label; evidence strength belongs to the phase-nutrient claim (see "Evidence tier per nutrient").
 
 #### Scenario: Placeholder label present
-- **WHEN** the system suggests any food from the stub database
+- **WHEN** the system suggests a food whose entry has `"placeholder": true`
 - **THEN** that suggestion carries a placeholder label
 
+#### Scenario: Food not marked as a placeholder
+- **WHEN** the system suggests a food whose entry does not have `"placeholder": true`
+- **THEN** that suggestion carries no placeholder label
+
+### Requirement: Rules file checked against the code's lists
+When `nutrition_rules.json` loads, the system SHALL check it before writing any file, and SHALL stop with an error naming the problem if: `phases` or `evidence` does not have exactly the four phases (Menstrual, Follicular, Ovulatory, Luteal); a nutrient has an evidence tier but no foods in `phases` (a nutrient with foods but no tier is covered by "Evidence tier per nutrient"); a food is not an object with a string `"food"`, a list `"categories"`, a list `"seasons"` and a `"placeholder"` that is `true` or `false`, or has any other key (so no food can carry an evidence label); or a food carries a category outside the fixed set of 11 or a season outside winter, spring, summer, autumn. A typo in the data SHALL never silently change which foods `--exclude` removes or which foods count as in season.
+
+#### Scenario: Phase missing from the rules file
+- **WHEN** `phases` has no Follicular entry
+- **THEN** the system stops with an error naming the missing phase, and writes no files
+
+#### Scenario: Category typo in the rules file
+- **WHEN** a food is tagged `diary` instead of `dairy`
+- **THEN** the system stops with an error naming the food and the unknown category, instead of running with an `--exclude dairy` that misses that food
+
+#### Scenario: Season typo in the rules file
+- **WHEN** a food has the season `Autumn` instead of `autumn`
+- **THEN** the system stops with an error naming the food and the unknown season
+
 ### Requirement: Evidence tier per nutrient
-Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`; the source SHALL be null exactly when the tier is Speculative. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
+Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tier (Strong/Moderate/Weak/Speculative) and a key source copied from `EVIDENCE.md`. Every claim SHALL have a `"source"` key: `null` when the tier is Speculative, and a non-empty string for Weak, Moderate and Strong. A claim SHALL have no keys other than `"tier"` and `"source"`. Every nutrient shown in the terminal output and `nutrients.md` SHALL state its tier, and `nutrients.md` SHALL also state the source (or that none was found). If any claim lacks a valid tier or has a source inconsistent with its tier, the system SHALL stop with an error before writing any file.
 
 #### Scenario: Tier shown with every suggestion
 - **WHEN** the system shows a nutrient, including one whose foods were all excluded
@@ -91,6 +137,10 @@ Every phase-nutrient claim in `nutrition_rules.json` SHALL carry an evidence tie
 
 #### Scenario: Claim without a tier
 - **WHEN** a phase-nutrient claim in `nutrition_rules.json` has no valid tier
+- **THEN** the system exits with an error naming that claim and writes no files
+
+#### Scenario: Source missing, empty or not a string
+- **WHEN** a claim has no `"source"` key, or a Weak, Moderate or Strong claim has an empty, blank or non-string source
 - **THEN** the system exits with an error naming that claim and writes no files
 
 #### Scenario: Counts match the evidence review
