@@ -1,5 +1,5 @@
 {
-  "notice": "PLACEHOLDER DATA. Every nutrient-food pairing and every seasonal tag in this file is a hand-written stub, not evidence-reviewed nutrition advice. It will be replaced by the evidence-graded database described in README.md Section 4. The one exception is \"evidence\": its tier and key source for each phase-nutrient claim are copied from EVIDENCE.md (source is null when no supporting source was found).",
+  "notice": "Not nutrition advice. The 15 Menstrual-phase foods are real: each one's \"fdc\" object holds the USDA FoodData Central ID, description and amount per 100 g of an SR Legacy entry for the food as eaten, and each meets the EU \"source of\" threshold (at least 15% of the nutrient reference value per 100 g). Every other food is a hand-written placeholder stub (\"placeholder\": true), not evidence-reviewed nutrition advice. For every food, real or not, the seasonal tags and categories are hand-written. \"evidence\" holds the tier and key source of each phase-nutrient claim, copied from EVIDENCE.md (source is null when no supporting source was found); a real amount says what a food contains, not that the phase pairing is supported.",
   "evidence": {
     "Menstrual": {
       "Iron": {
@@ -62,7 +62,7 @@
     "Menstrual": {
       "Iron": [
         {
-          "food": "lentils",
+          "food": "lentils, cooked",
           "categories": [],
           "seasons": [
             "winter",
@@ -70,19 +70,29 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 172421,
+            "description": "Lentils, mature seeds, cooked, boiled, without salt",
+            "per_100g": 3.33,
+            "unit": "mg"
+          }
         },
         {
-          "food": "spinach",
+          "food": "spinach, cooked",
           "categories": [],
           "seasons": [
             "spring",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 168463,
+            "description": "Spinach, cooked, boiled, drained, without salt",
+            "per_100g": 3.57,
+            "unit": "mg"
+          }
         },
         {
-          "food": "beef",
+          "food": "ground beef, cooked",
           "categories": [
             "meat"
           ],
@@ -92,10 +102,15 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 172161,
+            "description": "Beef, ground, unspecified fat content, cooked",
+            "per_100g": 2.67,
+            "unit": "mg"
+          }
         },
         {
-          "food": "sardines",
+          "food": "sardines (canned in oil)",
           "categories": [
             "fish"
           ],
@@ -105,10 +120,15 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 175139,
+            "description": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+            "per_100g": 2.92,
+            "unit": "mg"
+          }
         },
         {
-          "food": "tofu",
+          "food": "firm tofu (calcium-set)",
           "categories": [
             "soy"
           ],
@@ -118,7 +138,12 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 172475,
+            "description": "Tofu, raw, firm, prepared with calcium sulfate",
+            "per_100g": 2.66,
+            "unit": "mg"
+          }
         }
       ],
       "Vitamin C": [
@@ -128,15 +153,25 @@
           "seasons": [
             "winter"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 169097,
+            "description": "Oranges, raw, all commercial varieties",
+            "per_100g": 53.2,
+            "unit": "mg"
+          }
         },
         {
-          "food": "bell peppers",
+          "food": "red bell peppers",
           "categories": [],
           "seasons": [
             "summer"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 170108,
+            "description": "Peppers, sweet, red, raw",
+            "per_100g": 128,
+            "unit": "mg"
+          }
         },
         {
           "food": "strawberries",
@@ -145,30 +180,45 @@
             "spring",
             "summer"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 167762,
+            "description": "Strawberries, raw",
+            "per_100g": 58.8,
+            "unit": "mg"
+          }
         },
         {
-          "food": "broccoli",
+          "food": "broccoli, cooked",
           "categories": [],
           "seasons": [
             "autumn",
             "winter"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 169967,
+            "description": "Broccoli, cooked, boiled, drained, without salt",
+            "per_100g": 64.9,
+            "unit": "mg"
+          }
         },
         {
-          "food": "kiwi",
+          "food": "green kiwi",
           "categories": [],
           "seasons": [
             "winter",
             "spring"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 168153,
+            "description": "Kiwifruit, green, raw",
+            "per_100g": 92.7,
+            "unit": "mg"
+          }
         }
       ],
       "Magnesium": [
         {
-          "food": "pumpkin seeds",
+          "food": "pumpkin seeds (dried)",
           "categories": [],
           "seasons": [
             "winter",
@@ -176,10 +226,15 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 170556,
+            "description": "Seeds, pumpkin and squash seed kernels, dried",
+            "per_100g": 592,
+            "unit": "mg"
+          }
         },
         {
-          "food": "almonds",
+          "food": "almonds (raw)",
           "categories": [
             "nuts"
           ],
@@ -189,10 +244,15 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 170567,
+            "description": "Nuts, almonds",
+            "per_100g": 270,
+            "unit": "mg"
+          }
         },
         {
-          "food": "black beans",
+          "food": "black beans, cooked",
           "categories": [],
           "seasons": [
             "winter",
@@ -200,10 +260,15 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 173735,
+            "description": "Beans, black, mature seeds, cooked, boiled, without salt",
+            "per_100g": 70,
+            "unit": "mg"
+          }
         },
         {
-          "food": "cashews",
+          "food": "cashews (raw)",
           "categories": [
             "nuts"
           ],
@@ -213,7 +278,12 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 170162,
+            "description": "Nuts, cashew nuts, raw",
+            "per_100g": 292,
+            "unit": "mg"
+          }
         },
         {
           "food": "whole-wheat bread",
@@ -226,7 +296,12 @@
             "summer",
             "autumn"
           ],
-          "placeholder": true
+          "fdc": {
+            "id": 172688,
+            "description": "Bread, whole-wheat, commercially prepared",
+            "per_100g": 75,
+            "unit": "mg"
+          }
         }
       ]
     },

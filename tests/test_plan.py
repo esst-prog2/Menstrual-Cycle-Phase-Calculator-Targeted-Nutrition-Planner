@@ -8,7 +8,9 @@ import sys
 import tempfile
 import unittest
 from datetime import date, timedelta
+from decimal import Decimal
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -20,8 +22,37 @@ TODAY = date(2026, 9, 25)   # autumn
 # Literal values decided in PLANNING_LOG.md, so the tests do not take them from plan.py.
 CATEGORIES = ["dairy", "eggs", "gluten", "nuts", "peanuts", "soy",
               "fish", "shellfish", "sesame", "meat", "pork"]       # 2026-09-25
-DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
-              "stub database that has not been evidence-reviewed.")
+DISCLAIMER = ("Not nutrition advice. Foods marked [placeholder] come from a stub database "
+              "that has not been evidence-reviewed.")                               # 2026-10-26
+# EU "source of": at least 15% of the nutrient reference value per 100 g
+# (Regulation (EU) 1169/2011 Annex XIII; Regulation (EC) 1924/2006).        # 2026-10-26
+NRV = {"Iron": (14, "mg"), "Vitamin C": (80, "mg"), "Magnesium": (375, "mg")}
+SOURCE_OF_PERCENT = 15
+# The 15 real Menstrual foods: SR Legacy, food as eaten (design.md table).   # 2026-10-26
+MENSTRUAL_FDC = {
+    "Iron": [
+        ("lentils, cooked", 172421, "Lentils, mature seeds, cooked, boiled, without salt", 3.33),
+        ("spinach, cooked", 168463, "Spinach, cooked, boiled, drained, without salt", 3.57),
+        ("ground beef, cooked", 172161, "Beef, ground, unspecified fat content, cooked", 2.67),
+        ("sardines (canned in oil)", 175139,
+         "Fish, sardine, Atlantic, canned in oil, drained solids with bone", 2.92),
+        ("firm tofu (calcium-set)", 172475, "Tofu, raw, firm, prepared with calcium sulfate", 2.66),
+    ],
+    "Vitamin C": [
+        ("oranges", 169097, "Oranges, raw, all commercial varieties", 53.2),
+        ("red bell peppers", 170108, "Peppers, sweet, red, raw", 128),
+        ("strawberries", 167762, "Strawberries, raw", 58.8),
+        ("broccoli, cooked", 169967, "Broccoli, cooked, boiled, drained, without salt", 64.9),
+        ("green kiwi", 168153, "Kiwifruit, green, raw", 92.7),
+    ],
+    "Magnesium": [
+        ("pumpkin seeds (dried)", 170556, "Seeds, pumpkin and squash seed kernels, dried", 592),
+        ("almonds (raw)", 170567, "Nuts, almonds", 270),
+        ("black beans, cooked", 173735, "Beans, black, mature seeds, cooked, boiled, without salt", 70),
+        ("cashews (raw)", 170162, "Nuts, cashew nuts, raw", 292),
+        ("whole-wheat bread", 172688, "Bread, whole-wheat, commercially prepared", 75),
+    ],
+}
 REPEAT_NOTE = "repeated: no other candidate was available within the last 2 cycles"
 NO_FOOD_NOTE = "no suitable food left because of your exclusions"            # 2026-09-25
 SWAP_NOTE_TEXT = "swapped in with --prefer-alternative"
@@ -35,6 +66,8 @@ def days_ago(n):
 
 # Day 15 of a 28-day cycle -> Ovulatory: Fiber, Zinc, Omega-3.
 OVULATORY = ("--last-period", days_ago(14), "--cycle-length", "28")
+# Day 3 of a 28-day cycle -> Menstrual: Iron, Vitamin C, Magnesium.
+MENSTRUAL = ("--last-period", days_ago(2), "--cycle-length", "28")
 
 
 def real_rules():
@@ -58,6 +91,12 @@ def markdown_row(md, nutrient):
 def food(name, cats=(), seasons=("winter", "spring", "summer", "autumn"), **extra):
     return {"food": name, "categories": list(cats), "seasons": list(seasons),
             "placeholder": True, **extra}
+
+
+def real_food(name, per_100g, fdc_id=100001, unit="mg", cats=(), seasons=("winter", "spring", "summer", "autumn")):
+    """An invented real food; only valid in a slot with a reference value (Iron, Vitamin C, Magnesium)."""
+    return {"food": name, "categories": list(cats), "seasons": list(seasons),
+            "fdc": {"id": fdc_id, "description": f"{name}, invented", "per_100g": per_100g, "unit": unit}}
 
 
 class Workspace(unittest.TestCase):
@@ -252,12 +291,31 @@ class TestStubData(unittest.TestCase):
             for nutrient, candidates in nutrients.items():
                 self.assertGreaterEqual(len(candidates), 5, (phase, nutrient))   # 2026-09-24
 
-    def test_every_entry_is_placeholder_with_no_evidence_label(self):
+    def test_menstrual_real_other_phases_placeholder_no_evidence_label(self):
         labels = set(plan.EVIDENCE_TIERS)
-        for entry in self.entries:
-            self.assertIs(entry["placeholder"], True)
-            self.assertNotIn("evidence", entry)
-            self.assertFalse(labels & {str(v) for v in entry.values()}, entry)
+        for phase, nutrients in self.data["phases"].items():
+            for entry in (c for cs in nutrients.values() for c in cs):
+                if phase == "Menstrual":
+                    self.assertIn("fdc", entry)
+                    self.assertNotIn("placeholder", entry)
+                else:
+                    self.assertIs(entry["placeholder"], True)
+                    self.assertNotIn("fdc", entry)
+                self.assertNotIn("evidence", entry)
+                self.assertFalse(labels & {str(v) for v in entry.values()}, entry)
+
+    def test_menstrual_foods_match_the_recorded_fdc_entries(self):
+        menstrual = self.data["phases"]["Menstrual"]
+        self.assertEqual(sorted(menstrual), sorted(MENSTRUAL_FDC))
+        for nutrient, expected in MENSTRUAL_FDC.items():
+            found = [(c["food"], c["fdc"]["id"], c["fdc"]["description"], c["fdc"]["per_100g"])
+                     for c in menstrual[nutrient]]
+            self.assertEqual(found, expected, nutrient)
+            nrv, unit = NRV[nutrient]
+            for c in menstrual[nutrient]:
+                self.assertEqual(c["fdc"]["unit"], unit, c["food"])
+                self.assertGreaterEqual(Decimal(str(c["fdc"]["per_100g"])) * 100,
+                                        SOURCE_OF_PERCENT * nrv, c["food"])
 
     def test_every_entry_has_a_season(self):
         for entry in self.entries:
@@ -364,10 +422,23 @@ class TestRulesFileChecks(Workspace):
 
     # Review 6: every problem with the rules file is one clear error, never a traceback.
 
-    def test_placeholder_must_be_true_or_false(self):
-        rules = real_rules()
-        rules["phases"]["Ovulatory"]["Omega-3"][0]["placeholder"] = "true"
-        self.assert_stops(rules, 'Ovulatory/Omega-3/salmon "placeholder" must be true or false')
+    def test_food_is_either_placeholder_or_real(self):
+        # 2026-10-26: exactly one of "placeholder": true or "fdc"; "placeholder": false is an error.
+        needs = 'Ovulatory/Omega-3/salmon needs "placeholder": true or an "fdc" object'
+        for value in ("true", False):
+            with self.subTest(placeholder=value):
+                rules = real_rules()
+                rules["phases"]["Ovulatory"]["Omega-3"][0]["placeholder"] = value
+                self.assert_stops(rules, needs)
+        with self.subTest("neither"):
+            rules = real_rules()
+            del rules["phases"]["Ovulatory"]["Omega-3"][0]["placeholder"]
+            self.assert_stops(rules, needs)
+        with self.subTest("both"):
+            rules = real_rules()
+            rules["phases"]["Menstrual"]["Iron"][0]["placeholder"] = True
+            self.assert_stops(rules, 'Menstrual/Iron/lentils, cooked has both "fdc" and "placeholder"; '
+                                     "a real food has no placeholder flag")
 
     def test_categories_and_seasons_must_be_lists(self):
         for field in ("categories", "seasons"):
@@ -437,10 +508,70 @@ class TestRulesFileChecks(Workspace):
         rules = real_rules()
         rules["phases"]["Ovulatory"]["Omega-3"][0]["evidence"] = "Strong"   # spec: no evidence label on foods
         self.assert_stops(rules, "Ovulatory/Omega-3/salmon has unknown key 'evidence'; "
-                                 "only food, categories, seasons, placeholder")
+                                 "only food, categories, seasons, placeholder, fdc")
         rules = real_rules()
         rules["evidence"]["Ovulatory"]["Zinc"]["notes"] = "x"
         self.assert_stops(rules, "evidence Ovulatory/Zinc has unknown key 'notes'; only tier, source")
+
+    # 2026-10-26: real foods carry a checked "fdc" object and meet the EU "source of" threshold.
+
+    def test_fdc_object_is_checked(self):
+        where = 'Menstrual/Iron/lentils, cooked "fdc"'
+        cases = [
+            ("not an object", lambda f: f.update(fdc=172421), f"{where} must be an object"),
+            ("missing key", lambda f: f["fdc"].pop("unit"),
+             f"{where} must have exactly the keys id, description, per_100g, unit "
+             "(missing: unit; unknown: none)"),
+            ("unknown key", lambda f: f["fdc"].update(source="USDA"),
+             f"{where} must have exactly the keys id, description, per_100g, unit "
+             "(missing: none; unknown: source)"),
+            ("id zero", lambda f: f["fdc"].update(id=0), f'{where} "id" must be a positive whole number'),
+            ("id text", lambda f: f["fdc"].update(id="172421"), f'{where} "id" must be a positive whole number'),
+            ("id bool", lambda f: f["fdc"].update(id=True), f'{where} "id" must be a positive whole number'),
+            ("id float", lambda f: f["fdc"].update(id=172421.0), f'{where} "id" must be a positive whole number'),
+            ("empty description", lambda f: f["fdc"].update(description=" "),
+             f'{where} "description" must be a non-empty string'),
+            ("negative amount", lambda f: f["fdc"].update(per_100g=-1),
+             f'{where} "per_100g" must be a number of at least 0'),
+            ("amount text", lambda f: f["fdc"].update(per_100g="3.33"),
+             f'{where} "per_100g" must be a number of at least 0'),
+            ("amount bool", lambda f: f["fdc"].update(per_100g=True),
+             f'{where} "per_100g" must be a number of at least 0'),
+        ]
+        for label, change, message in cases:
+            with self.subTest(label):
+                rules = real_rules()
+                change(rules["phases"]["Menstrual"]["Iron"][0])
+                self.assert_stops(rules, message)
+
+    def test_real_food_below_source_of_threshold(self):
+        rules = real_rules()
+        rules["phases"]["Menstrual"]["Iron"][4] = {
+            "food": "firm tofu (nigari)", "categories": ["soy"], "seasons": ["winter", "spring", "summer", "autumn"],
+            "fdc": {"id": 172448, "per_100g": 1.61, "unit": "mg",
+                    "description": "Tofu, firm, prepared with calcium sulfate and magnesium chloride (nigari)"}}
+        self.assert_stops(rules, 'Menstrual/Iron/firm tofu (nigari) has 1.61 mg Iron per 100 g, below the '
+                                 'EU "source of" threshold of 2.1 mg (15% of the 14 mg reference value)')
+
+    def test_real_food_with_wrong_unit(self):
+        rules = real_rules()
+        rules["phases"]["Menstrual"]["Vitamin C"][0]["fdc"]["unit"] = "g"
+        self.assert_stops(rules, "Menstrual/Vitamin C/oranges has its amount in g, "
+                                 "but the Vitamin C reference value is in mg")
+
+    def test_real_food_in_slot_without_reference_value(self):
+        rules = real_rules()
+        rules["phases"]["Ovulatory"]["Omega-3"][0] = real_food("salmon", 2.5, cats=["fish"])
+        self.assert_stops(rules, 'Ovulatory/Omega-3/salmon has an "fdc" object, but Omega-3 has no '
+                                 '"source of" threshold (only Iron, Vitamin C, Magnesium have one)')
+
+    def test_real_food_exactly_at_threshold_passes(self):
+        # 15% of 375 mg is exactly 56.25 mg, and an amount on the threshold passes.
+        rules = real_rules()
+        rules["phases"]["Menstrual"]["Magnesium"][0]["fdc"]["per_100g"] = 56.25
+        (self.dir / "nutrition_rules.json").write_text(json.dumps(rules), encoding="utf-8")
+        out, _ = self.run_plan(*MENSTRUAL)
+        self.assertIn("Magnesium: pumpkin seeds (dried) [56.25 mg/100 g, 15% NRV, FDC 170556]", out)
 
     def test_files_read_and_written_as_utf8(self):
         # Run plan.py under a Latin-1 locale: without explicit UTF-8, the accented name is garbled.
@@ -794,7 +925,8 @@ class TestOutput(Workspace):
         md = self.markdown()
         for text in (out, md):
             self.assertEqual(text.count(DISCLAIMER), 1)
-            self.assertEqual(text.count("[placeholder]"), 3)
+            # The disclaimer itself names the "[placeholder]" label, so it is left out of the count.
+            self.assertEqual(text.replace(DISCLAIMER, "").count("[placeholder]"), 3)
 
     def test_every_suggestion_states_its_evidence_tier_in_both(self):
         data = real_rules()
@@ -808,12 +940,50 @@ class TestOutput(Workspace):
                 row = markdown_row(md, nutrient)
                 self.assertIn(f"| {claim['tier']} - {claim['source'] or 'no supporting source found'} |", row)
 
-    def test_placeholder_label_follows_the_flag(self):
-        self.use_slot_a([food("a1", placeholder=False)])
+    def test_label_follows_the_data(self):
+        self.use_rules({p: {"Iron": [real_food("i1", 2.8)], "B": [food("b0")], "C": [food("c0")]}
+                        for p in plan.PHASES})
         out, _ = self.run_plan(*OVULATORY)
-        self.assertEqual(nutrient_lines(out, "A")[0], "  A: a1 (evidence: Speculative)")
+        self.assertEqual(nutrient_lines(out, "Iron")[0],
+                         "  Iron: i1 [2.8 mg/100 g, 20% NRV, FDC 100001] (evidence: Speculative)")
         self.assertEqual(nutrient_lines(out, "B")[0], "  B: b0 [placeholder] (evidence: Speculative)")
-        self.assertIn("| a1 |", markdown_row(self.markdown(), "A"))
+        self.assertIn("| i1 [2.8 mg/100 g, 20% NRV, FDC 100001] |", markdown_row(self.markdown(), "Iron"))
+
+    def test_menstrual_run_shows_real_foods_in_both(self):
+        out, _ = self.run_plan(*MENSTRUAL)
+        md = self.markdown()
+        label = "lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421]"
+        self.assertEqual(nutrient_lines(out, "Iron")[0], f"  Iron: {label} (evidence: Strong)")
+        self.assertIn(f"| Iron | Strong - Cochrane CD009747 (2016); NHS | {label} |", md)
+        for text in (out, md):
+            self.assertEqual(text.count(DISCLAIMER), 1)
+            self.assertNotIn("[placeholder]", text.replace(DISCLAIMER, ""))
+            self.assertEqual(text.count(", FDC "), 3)
+
+    def test_real_label_rounds_half_up_and_prints_amount_as_stored(self):
+        # 53.2 / 80 = 66.5%: half up gives 67 (float round() would give 66). 128 stays 128, not 128.0.
+        for today, expected in ((date(2026, 12, 15), "Vitamin C: oranges [53.2 mg/100 g, 67% NRV, FDC 169097]"),
+                                (date(2026, 7, 15), "Vitamin C: red bell peppers [128 mg/100 g, 160% NRV, FDC 170108]")):
+            with self.subTest(expected=expected):
+                self.reset()
+                out, _ = self.run_plan("--last-period", (today - timedelta(days=2)).isoformat(),
+                                       "--cycle-length", "28", today=today)
+                self.assertIn(expected, out)
+                self.assertIn(expected.split(": ", 1)[1], self.markdown())
+
+    def test_amount_does_not_affect_ranking(self):
+        self.use_rules({p: {"Iron": [real_food("i1", 3), real_food("i2", 9, fdc_id=100002)],
+                            "B": [food("b0")], "C": [food("c0")]} for p in plan.PHASES})
+        out, _ = self.run_plan(*OVULATORY)
+        self.assertEqual(nutrient_lines(out, "Iron"), ["  Iron: i1 [3 mg/100 g, 21% NRV, FDC 100001] "
+                                                       "(evidence: Speculative)"])
+
+    def test_no_network_needed(self):
+        def no_network(*args, **kwargs):
+            raise OSError("network disabled in this test")
+        with mock.patch("socket.socket", no_network), mock.patch("socket.create_connection", no_network):
+            out, _ = self.run_plan(*MENSTRUAL)
+        self.assertIn("FDC 172421", out)
 
     def test_tier_shown_even_when_every_food_is_excluded(self):
         self.use_rules({p: {"A": [food("a1", ["fish"])], "B": [food("b1")], "C": [food("c1")]}
