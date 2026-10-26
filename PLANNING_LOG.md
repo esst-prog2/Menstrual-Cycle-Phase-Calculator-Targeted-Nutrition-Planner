@@ -161,3 +161,4 @@ OK
 2026-10-26 — README Section 1 opens with an intro paragraph in the user's voice, describing the demo from start to end (Menstrual day with real foods, Ovulatory day with placeholders, excluding fish, swapping a food, opening the file). Decided by: user.
 2026-10-26 — README Section 1's "Setup" step is renamed "Before the demo", because it is done before the talk. Decided by: user.
 2026-10-26 — README Section 1 adds after the rotation sentence: "A slide shows two consecutive cycles side by side." Decided by: user.
+2026-10-26 — After archiving real-menstrual-fdc-data, the Purpose of the nutrient-selection spec is reworded: the Menstrual-phase foods are real USDA FoodData Central data, and the other three phases are still stub placeholders. Decided by: user.
