@@ -17,6 +17,7 @@ import re
 import shutil
 from dataclasses import dataclass, replace
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import NamedTuple
 
@@ -36,11 +37,17 @@ HISTORY_ENTRIES = NO_REPEAT_CYCLES + 1   # current cycle plus the 2 before it
 # Tiers for the per-claim "evidence" map in nutrition_rules.json. Foods are not ranked by
 # evidence: no per-food evidence data exists yet.
 EVIDENCE_TIERS = ["Strong", "Moderate", "Weak", "Speculative"]
-FOOD_KEYS = ["food", "categories", "seasons", "placeholder"]
+FOOD_KEYS = ["food", "categories", "seasons", "placeholder", "fdc"]
+FDC_KEYS = ["id", "description", "per_100g", "unit"]
 CLAIM_KEYS = ["tier", "source"]
+# A real food must be an EU "source of" its nutrient: at least 15% of the nutrient reference
+# value (NRV) per 100 g. Regulation (EC) 1924/2006 Annex, with the significant amount and the
+# NRVs from Regulation (EU) 1169/2011 Annex XIII Part A.
+SOURCE_OF_PERCENT = 15
+NRV = {"Iron": (14, "mg"), "Vitamin C": (80, "mg"), "Magnesium": (375, "mg")}
 
-DISCLAIMER = ("PLACEHOLDER DATA - not nutrition advice. Every food below comes from a "
-              "stub database that has not been evidence-reviewed.")
+DISCLAIMER = ("Not nutrition advice. Foods marked [placeholder] come from a stub database "
+              "that has not been evidence-reviewed.")
 NO_SOURCE = "no supporting source found"
 SWAP_NOTE = "swapped in with --prefer-alternative"
 REPEAT_NOTE = f"repeated: no other candidate was available within the last {NO_REPEAT_CYCLES} cycles"
@@ -248,7 +255,48 @@ def _check_rules_shape(data, name):
                                      f"only {', '.join(FOOD_KEYS)}")
                 for field in ("categories", "seasons"):
                     require(isinstance(c.get(field), list), f'{where} "{field}"', "a list")
-                require(isinstance(c.get("placeholder"), bool), f'{where} "placeholder"', "true or false")
+                # A food is either a placeholder or real (has "fdc"), never both and never neither.
+                if "fdc" not in c:
+                    if c.get("placeholder") is not True:
+                        raise InputError(f'{name}: {where} needs "placeholder": true or an "fdc" object')
+                    continue
+                if "placeholder" in c:
+                    raise InputError(f'{name}: {where} has both "fdc" and "placeholder"; '
+                                     "a real food has no placeholder flag")
+                fdc, where = c["fdc"], f'{where} "fdc"'
+                require(isinstance(fdc, dict), where, "an object")
+                if set(fdc) != set(FDC_KEYS):
+                    raise InputError(f"{name}: {where} must have exactly the keys {', '.join(FDC_KEYS)} "
+                                     f"(missing: {', '.join(k for k in FDC_KEYS if k not in fdc) or 'none'}; "
+                                     f"unknown: {', '.join(sorted(set(fdc) - set(FDC_KEYS))) or 'none'})")
+                # type() rather than isinstance(): true and false are ints in Python.
+                require(type(fdc["id"]) is int and fdc["id"] > 0, f'{where} "id"', "a positive whole number")
+                require(isinstance(fdc["description"], str) and fdc["description"].strip(),
+                        f'{where} "description"', "a non-empty string")
+                require(type(fdc["per_100g"]) in (int, float) and fdc["per_100g"] >= 0,
+                        f'{where} "per_100g"', "a number of at least 0")
+
+
+def nrv_percent(nutrient, fdc):
+    """Exact percentage of the NRV in 100 g. Decimal, so an amount on the threshold is not
+    pushed below it by float rounding, and 66.5 can be rounded half up."""
+    return Decimal(str(fdc["per_100g"])) * 100 / NRV[nutrient][0]
+
+
+def _check_source_of(name, where, nutrient, fdc):
+    """Stop unless a real food meets the EU "source of" threshold for its slot's nutrient."""
+    if nutrient not in NRV:
+        raise InputError(f'{name}: {where} has an "fdc" object, but {nutrient} has no "source of" '
+                         f"threshold (only {', '.join(NRV)} have one)")
+    nrv, unit = NRV[nutrient]
+    if fdc["unit"] != unit:
+        raise InputError(f"{name}: {where} has its amount in {fdc['unit']}, "
+                         f"but the {nutrient} reference value is in {unit}")
+    if nrv_percent(nutrient, fdc) < SOURCE_OF_PERCENT:
+        threshold = Decimal(SOURCE_OF_PERCENT) * nrv / 100
+        raise InputError(f"{name}: {where} has {fdc['per_100g']} {unit} {nutrient} per 100 g, below the "
+                         f'EU "source of" threshold of {threshold} {unit} '
+                         f"({SOURCE_OF_PERCENT}% of the {nrv} {unit} reference value)")
 
 
 def load_rules(path, warn):
@@ -297,6 +345,8 @@ def load_rules(path, warn):
                     if unknown:
                         raise InputError(f"{name}: {phase}/{nutrient}/{c['food']} has unknown {field} "
                                          f"{', '.join(unknown)} (valid: {', '.join(allowed)})")
+                if "fdc" in c:
+                    _check_source_of(name, f"{phase}/{nutrient}/{c['food']}", nutrient, c["fdc"])
             if len(candidates) < MIN_CANDIDATES:
                 warn(f"Warning: {phase}/{nutrient} has only {len(candidates)} candidate foods "
                      f"(minimum {MIN_CANDIDATES}); rotation may repeat foods sooner.")
@@ -404,8 +454,12 @@ def food_label(suggestion):
     res = suggestion.resolution
     if res.chosen is None:
         return "(none)"
-    label = " [placeholder]" if res.chosen["placeholder"] else ""
-    return res.chosen["food"] + label
+    fdc = res.chosen.get("fdc")
+    if fdc is None:                                 # checked at load: then "placeholder" is true
+        return res.chosen["food"] + " [placeholder]"
+    percent = nrv_percent(suggestion.nutrient, fdc).quantize(Decimal(1), ROUND_HALF_UP)
+    return (f"{res.chosen['food']} [{fdc['per_100g']} {fdc['unit']}/100 g, "
+            f"{percent}% NRV, FDC {fdc['id']}]")
 
 
 def evidence_label(suggestion):

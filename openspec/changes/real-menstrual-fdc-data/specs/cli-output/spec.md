@@ -14,7 +14,7 @@ The format is `<food> [<per_100g> <unit>/100 g, <percent>% NRV, FDC <id>]`, for 
 
 #### Scenario: Menstrual run shows no placeholder label
 - **WHEN** the system runs on a Menstrual day with the shipped data
-- **THEN** neither the terminal output nor `nutrients.md` contains `[placeholder]`, and each of the three suggestions shows an FDC ID
+- **THEN** no suggestion in the terminal output or `nutrients.md` carries `[placeholder]` (the disclaimer still names the label), and each of the three suggestions shows an FDC ID
 
 #### Scenario: Ovulatory run keeps placeholder labels
 - **WHEN** the system runs on an Ovulatory day with the shipped data

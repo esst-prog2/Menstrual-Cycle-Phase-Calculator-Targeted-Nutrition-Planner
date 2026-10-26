@@ -22,7 +22,85 @@ The specs in `openspec/` were written with [OpenSpec](https://github.com/Fission
 (proposing, validating and archiving changes), not to run `plan.py` or its tests.
 
 ## 1. The Demo
-I open my terminal and run `python plan.py --last-period <a date 14 days ago> --cycle-length 28`. The script calculates that today is Day 15 of my cycle and tells me I am in the Ovulatory phase. It prints the nutrients the rulebook pairs with that phase (like fiber and zinc, both rated Speculative in [EVIDENCE.md](EVIDENCE.md)) and, for each one, a food that contains it, for example "zinc: pumpkin seeds." Next to the script, it creates a clean file called `nutrients.md` listing those nutrient-food pairs for the current phase. Since it checks my previous logs in `history.json`, it rotates the suggested foods so I don't get the exact same list every single month. If I pass `--exclude dairy`, it automatically removes all dairy items from consideration.
+I open my terminal and tell the planner that my period started two days ago. It says I am on day 3, in the Menstrual phase, and lists the three nutrients that matter now: iron, vitamin C and magnesium, with one food for each. These foods are real. Next to each one I can see how much of the nutrient it has, from USDA FoodData Central, and how strong the evidence is that this nutrient matters in this phase. Then I try a date in the Ovulatory phase. There the foods are still placeholders, and the tool clearly says so. I exclude fish and salmon is gone. I swap a food I don't want. At the end I open the file it created, where everything is written down with its sources.
+
+A 5-minute demo, run alongside the slides. The output below is from an autumn
+day; the season decides some picks (in autumn, broccoli is chosen over
+oranges for Vitamin C).
+
+**Before the demo.** The demo runs in a separate, empty folder, so my own `history.json`
+is never read or changed. Only the script and the rulebook are copied:
+
+```
+mkdir <demo-folder>
+cp plan.py nutrition_rules.json <demo-folder>/
+cd <demo-folder>
+```
+
+**1. A Menstrual day: real, sourced foods.** Each food shows its amount per
+100 g, its % of the EU nutrient reference value (NRV) and its USDA FoodData
+Central ID, next to the evidence tier for the nutrient:
+
+```
+$ python3 plan.py --last-period <a date 2 days ago> --cycle-length 28
+Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+  Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] (evidence: Strong)
+  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] (evidence: Moderate)
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] (evidence: Moderate)
+```
+
+**2. An Ovulatory day: placeholder foods.** The other three phases still use
+hand-written stub foods, and they are labelled as such:
+
+```
+$ python3 plan.py --last-period <a date 14 days ago> --cycle-length 28
+...
+Day 15 of your 28-day cycle: Ovulatory phase
+...
+  Fiber: pears [placeholder] (evidence: Speculative)
+  Zinc: pumpkin seeds [placeholder] (evidence: Speculative)
+  Omega-3: salmon [placeholder] (evidence: Weak)
+```
+
+**3. Exclusions are a hard rule.** Excluding fish on the same day replaces
+salmon:
+
+```
+$ python3 plan.py --last-period <a date 14 days ago> --cycle-length 28 --exclude fish
+...
+  Omega-3: walnuts [placeholder] (evidence: Weak)
+```
+
+**4. Swapping a food.** Back on the Menstrual day, `--prefer-alternative`
+swaps one nutrient's food for the next candidate, for the rest of the cycle:
+
+```
+$ python3 plan.py --last-period <a date 2 days ago> --cycle-length 28 --prefer-alternative iron
+...
+  Iron: spinach, cooked [3.57 mg/100 g, 26% NRV, FDC 168463] (evidence: Strong)
+    note: swapped in with --prefer-alternative
+```
+
+**5. The file.** Each run also writes `nutrients.md` next to the script, with
+the same foods and notes plus the source for each evidence tier:
+
+```
+| Nutrient | Evidence | Food | Notes |
+| --- | --- | --- | --- |
+| Iron | Strong - Cochrane CD009747 (2016); NHS | spinach, cooked [3.57 mg/100 g, 26% NRV, FDC 168463] | swapped in with --prefer-alternative |
+| Vitamin C | Moderate - EFSA 2014 opinion; Cook & Reddy 2001 | broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] | chosen over oranges - out of season; swap with --prefer-alternative vitamin c |
+| Magnesium | Moderate - Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020 | pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] |  |
+```
+
+**Rotation, in one sentence:** a food is kept for the whole cycle, and
+`history.json` makes sure it is not suggested again for the same nutrient in
+the next 2 cycles, so the foods vary from month to month. A slide shows two
+consecutive cycles side by side.
 
 ## 2. The Shape
 **in:** The start date of my last period, my average cycle length, any food exclusions (optional), a local `nutrition_rules.json` rulebook, and a lightweight `history.json` tracking recent recommendations.  
@@ -49,8 +127,8 @@ I open my terminal and run `python plan.py --last-period <a date 14 days ago> --
 
 ### What the evidence review found (2026-09-30)
 
-`nutrition_rules.json` currently holds hand-written placeholder pairings
-(3 nutrients × 4 phases = 12). Each pair was checked against PubMed,
+`nutrition_rules.json` pairs 3 nutrients with each of the 4 phases (12
+pairings). Each pair was checked against PubMed,
 Cochrane, ACOG, NHS and EFSA for a source supporting that nutrient in that
 specific phase. Full citations, DOIs and verbatim quotes are in
 [EVIDENCE.md](EVIDENCE.md), which also has [the tier of each pair and the
@@ -74,6 +152,30 @@ What this means for how the tool's output should be read:
 
 The pairings were deliberately left unchanged after this review; only this
 README's framing was corrected (PLANNING_LOG.md, 2026-09-30).
+
+### Real food data for the Menstrual phase (2026-10-26)
+
+The 15 Menstrual foods (5 each for Iron, Vitamin C and Magnesium) are real
+data from [USDA FoodData Central](https://fdc.nal.usda.gov/), SR Legacy
+dataset. Each one stores its FDC ID, the exact FDC description, and the amount
+of the nutrient per 100 g of the food as eaten (cooked where it is normally
+cooked). The tool shows the amount, the % of the nutrient reference value and
+the FDC ID, for example `lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421]`.
+The values are copied into the file, so the tool never goes online.
+
+When the file loads, every real food must be an EU "source of" its nutrient:
+at least 15% of the nutrient reference value per 100 g (Regulation (EC)
+1924/2006, with the reference values from Regulation (EU) 1169/2011 Annex
+XIII). That means 2.1 mg iron, 12 mg vitamin C or 56.25 mg magnesium.
+
+What "real" covers, and what it does not:
+
+- **Real:** what the food contains. A real amount does **not** make the
+  phase pairing any stronger; the evidence tier next to each nutrient still
+  describes that.
+- **Still hand-written:** every food in the other three phases (shown with
+  `[placeholder]`), and the seasonal tags and categories of every food,
+  real or not.
 
 ### How rules are graded
 
