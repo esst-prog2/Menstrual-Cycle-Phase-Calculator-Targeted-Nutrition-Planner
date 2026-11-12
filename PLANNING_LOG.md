@@ -177,3 +177,4 @@ OK
 2026-11-13 — The promo page is mainly read alone via a shared link (laptop or phone) and may be shown briefly in the demo; its one takeaway is "it tells you when it's guessing". Decided by: user.
 2026-11-13 — The promo page uses PROMO.md's wording and its unedited output blocks verbatim; design changes only structure and emphasis. Decided by: user.
 2026-11-13 — PRODUCT.md (Impeccable's product record) lives at the repo root and holds product facts only; visual decisions go to DESIGN.md and the surface brief later. Decided by: Claude (following Impeccable's init flow).
+2026-11-13 — The promo page's visual world is The Nutrition Label: the page is one food-label panel whose bottom row grades its own claims. Decided by: user (chosen over the roll's Shelf-Edge Label); Claude (proposed it as the top pick).
