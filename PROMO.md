@@ -2,7 +2,7 @@
 
 **A cycle food planner that tells you when it's guessing.**
 
-Lots of apps promise to know the right foods for every phase of your cycle, and they say it with total confidence. When I checked those claims myself, most of them didn't hold up. So I built a planner that shows you how strong the evidence is behind every suggestion, including when it's weak.
+I wanted to build a simple tool that works out which phase of the menstrual cycle someone is in and which nutrients might help in that phase, with one food for each. While building it, I looked into the evidence behind these suggestions. Only a few of them turned out to be well supported; most are weak or just a guess. So instead of hiding that, the tool shows how strong the evidence is next to every suggestion.
 
 ---
 
