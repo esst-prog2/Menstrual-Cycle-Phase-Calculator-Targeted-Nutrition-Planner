@@ -162,3 +162,4 @@ OK
 2026-10-26 — README Section 1's "Setup" step is renamed "Before the demo", because it is done before the talk. Decided by: user.
 2026-10-26 — README Section 1 adds after the rotation sentence: "A slide shows two consecutive cycles side by side." Decided by: user.
 2026-10-26 — After archiving real-menstrual-fdc-data, the Purpose of the nutrient-selection spec is reworded: the Menstrual-phase foods are real USDA FoodData Central data, and the other three phases are still stub placeholders. Decided by: user.
+2026-11-12 — After each step from now on, Claude commits and adds a row to PROCESS.md (the step, what the tool did, and what the user decided). Decided by: user.
