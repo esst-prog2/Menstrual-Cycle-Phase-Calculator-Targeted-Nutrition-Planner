@@ -163,3 +163,4 @@ OK
 2026-10-26 — README Section 1 adds after the rotation sentence: "A slide shows two consecutive cycles side by side." Decided by: user.
 2026-10-26 — After archiving real-menstrual-fdc-data, the Purpose of the nutrient-selection spec is reworded: the Menstrual-phase foods are real USDA FoodData Central data, and the other three phases are still stub placeholders. Decided by: user.
 2026-11-12 — After each step from now on, Claude commits and adds a row to PROCESS.md (the step, what the tool did, and what the user decided). Decided by: user.
+2026-11-12 — The promo page content lives in PROMO.md, written for people who might use the tool, and it keeps the README's evidence caveats: the 2/4/1/5 tier counts, the fact that only the Menstrual phase has real data, and a "What it isn't" section. Decided by: Claude.
