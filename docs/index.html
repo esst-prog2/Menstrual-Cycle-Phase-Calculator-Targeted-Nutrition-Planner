@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cycle Nutrition Planner: a cycle food planner that tells you when it's guessing</title>
+<meta name="description" content="A cycle food planner that shows you how strong the evidence is behind every suggestion, including when it's weak.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="ground">
+<article class="label" aria-labelledby="headline">
+
+  <header class="label-head">
+    <h1 id="headline">A cycle food planner that tells you when it's guessing.</h1>
+    <p class="row row-name"><span>Cycle Nutrition Planner</span></p>
+    <p class="promise">Lots of apps promise to know the right foods for every phase of your cycle, and they say it with total confidence. When I checked those claims myself, most of them didn't hold up. So I built a planner that shows you how strong the evidence is behind every suggestion, including when it's weak.</p>
+  </header>
+
+  <section class="days" aria-labelledby="days-title">
+    <h2 id="days-title">Same tool, two different days</h2>
+
+    <div class="day">
+      <p class="caption"><strong>Day 3, for a period that started 2 days ago (28-day cycle).</strong> Real food data, and evidence that holds up:</p>
+      <a class="skip" href="#after-day3">Skip the day 3 output</a>
+      <pre class="output" aria-label="Day 3 output"><code>Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+  Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] <span class="grade g-strong">(evidence: Strong)</span>
+  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
+      <p id="after-day3">Each food comes from USDA FoodData Central, with its amount per 100 g and its share of the EU reference value. The foods change with the season. This run was in autumn, which is why it explains picking broccoli over oranges.</p>
+    </div>
+
+    <div class="day">
+      <p class="caption"><strong>Day 14, for a period that started 13 days ago (28-day cycle).</strong> Here the tool admits it's guessing:</p>
+      <a class="skip" href="#after-day14">Skip the day 14 output</a>
+      <pre class="output" aria-label="Day 14 output"><code>Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 14 of your 28-day cycle: Ovulatory phase
+
+Nutrients that matter now, and a food that contains each:
+  Fiber: pears [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
+  Zinc: pumpkin seeds [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
+  Omega-3: salmon [placeholder] <span class="grade g-weak">(evidence: Weak)</span></code></pre>
+      <p id="after-day14">I haven't finished this part yet. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.</p>
+    </div>
+  </section>
+
+  <section class="score" aria-labelledby="score-title">
+    <h2 id="score-title">The scoreboard</h2>
+    <p>I checked all 12 phase–nutrient pairings the planner uses against PubMed, Cochrane, NHS and EFSA sources:</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col"><span class="grade g-strong">Strong</span></th>
+          <th scope="col"><span class="grade g-moderate">Moderate</span></th>
+          <th scope="col"><span class="grade g-weak">Weak</span></th>
+          <th scope="col"><span class="grade g-speculative">Speculative</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2</td><td>4</td><td>1</td><td>5</td></tr>
+      </tbody>
+    </table>
+    <p>The full review, with citations, is in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/EVIDENCE.md">EVIDENCE.md</a>.</p>
+  </section>
+
+  <section class="fine" aria-labelledby="built-title">
+    <h2 id="built-title">What I chose to build</h2>
+    <ul>
+      <li><strong>Evidence next to every pick.</strong> Weak pairings aren't hidden, and they aren't dressed up as strong ones.</li>
+      <li><strong>Real food data.</strong> The Menstrual-phase foods are real USDA entries, each with its FDC ID.</li>
+      <li><strong>Open about its choices.</strong> When it picks one food over another, it tells you why and lets you swap.</li>
+      <li><strong>Private by design.</strong> It's one Python file and one JSON rulebook. It needs no account and no internet connection.</li>
+    </ul>
+  </section>
+
+  <section class="fine" aria-labelledby="isnt-title">
+    <h2 id="isnt-title">What it isn't</h2>
+    <ul>
+      <li><strong>It isn't medical or nutrition advice.</strong> Where good evidence exists, it's for taking supplements every day to ease PMS or period pain, not for eating certain foods in certain phases.</li>
+      <li><strong>Only the Menstrual phase has real food data so far.</strong> The other three phases use placeholder foods, labelled <code>[placeholder]</code>.</li>
+    </ul>
+    <p>The best way to read the output is as a friendly nudge to eat a variety of foods.</p>
+  </section>
+
+  <section class="fine" aria-labelledby="how-title">
+    <h2 id="how-title">How I built it</h2>
+    <p>I built it spec-first with OpenSpec: each change was proposed and specified, then implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PLANNING_LOG.md">PLANNING_LOG.md</a> with who made it, and each work step is in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PROCESS.md">PROCESS.md</a>.</p>
+  </section>
+
+  <section class="try" aria-labelledby="try-title">
+    <h2 id="try-title">Try it</h2>
+    <p>You need Python 3.10 or newer, and nothing else. This is a template, so fill in your own values:</p>
+    <pre class="output" aria-label="Command template"><code>python3 plan.py --last-period YYYY-MM-DD --cycle-length DAYS</code></pre>
+    <ul>
+      <li><code>--last-period</code>: the start date of your most recent period. It can't be in the future, and it can't be more than your cycle length plus 7 days ago.</li>
+      <li><code>--cycle-length</code>: your average cycle length, from 21 to 38 days (for example, 28).</li>
+      <li>To leave out a food category, add a flag such as <code>--exclude fish</code>.</li>
+      <li>If the output has a <code>swap with --prefer-alternative ...</code> note, copy that flag to use the other food. Put quotes around a two-word nutrient, for example <code>--prefer-alternative "vitamin c"</code>.</li>
+    </ul>
+    <p>It remembers recent picks in two local files (<code>history.json</code> and <code>nutrients.md</code>) in the folder you run it from, so the foods rotate between cycles. Nothing leaves your computer.</p>
+    <p class="repo"><a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner">Get the code on GitHub</a></p>
+  </section>
+
+</article>
+</main>
+</body>
+</html>

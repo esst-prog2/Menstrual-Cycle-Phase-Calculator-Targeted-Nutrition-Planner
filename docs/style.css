@@ -1,0 +1,231 @@
+/* Cycle Nutrition Planner promo page: one food-label panel. */
+
+:root {
+  --ink: #000;
+  --stock: #fff;
+  --ground: #d7141a;
+  --on-ground: #000;
+  --sans: "Helvetica Neue", Helvetica, Arial, "Nimbus Sans", "Liberation Sans", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --hair: 1px;
+  --rule: 4px;
+  --bar: 12px;
+  --pad: clamp(0.875rem, 3vw, 1.5rem);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 1rem/1.45 var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+::selection { background: var(--ink); color: var(--stock); }
+
+a {
+  color: inherit;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+a:hover { text-decoration-thickness: 4px; }
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* The ground and the panel */
+
+.ground {
+  min-height: 100vh;
+  padding: clamp(0.75rem, 5vw, 4rem) clamp(0.5rem, 4vw, 2rem);
+  background: var(--ground);
+}
+
+.label {
+  max-width: 54rem;
+  margin: 0 auto;
+  padding: 0 var(--pad) var(--pad);
+  background: var(--stock);
+  border: 6px solid var(--ink);
+}
+
+/* Head: the product name and the headline */
+
+.label-head { padding-top: var(--pad); }
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 8.5vw, 4.6rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.35rem 0;
+  border-bottom: var(--hair) solid var(--ink);
+}
+
+.row-name {
+  margin-top: 0.75rem;
+  border-top: var(--hair) solid var(--ink);
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.promise {
+  margin: 0.75rem 0 0;
+  padding-bottom: 0.9rem;
+  border-bottom: var(--bar) solid var(--ink);
+  font-size: 1.125rem;
+}
+
+/* Section heads: label style, a heavy line with a rule under it */
+
+h2 {
+  margin: 0;
+  padding: 0.6rem 0 0.3rem;
+  font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  border-bottom: var(--rule) solid var(--ink);
+}
+
+section > p,
+.day > p { margin: 0.6rem 0 0; }
+
+/* Day 3 vs day 14 */
+
+.day {
+  padding: 0.25rem 0 1rem;
+  border-bottom: var(--hair) solid var(--ink);
+}
+.day + .day { border-bottom: var(--bar) solid var(--ink); }
+
+.caption { font-size: 1.0625rem; }
+
+.output {
+  margin: 0.6rem 0 0;
+  padding: 0.75rem 0.875rem;
+  border: 2px solid var(--ink);
+  font: 400 0.8125rem/1.6 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.output code { font: inherit; }
+
+/* Evidence grades: each grade is its own black-ink mark, so none needs colour */
+
+.grade {
+  padding: 0 0.2em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.g-strong { background: var(--ink); color: var(--stock); }
+.g-moderate { outline: 2px solid var(--ink); outline-offset: -2px; }
+.g-weak { outline: 2px dashed var(--ink); outline-offset: -2px; }
+.g-speculative { outline: 2px dotted var(--ink); outline-offset: -2px; }
+
+/* Skip links appear only on keyboard focus */
+
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+.skip:focus {
+  position: static;
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.15rem 0.4rem;
+  background: var(--ink);
+  color: var(--stock);
+}
+
+/* The scoreboard: the panel's bottom row */
+
+.score { padding-bottom: 1rem; border-bottom: var(--bar) solid var(--ink); }
+
+.score table {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.score th,
+.score td {
+  padding: 0.4rem 0.25rem;
+  text-align: center;
+  border: var(--hair) solid var(--ink);
+}
+.score th {
+  font-size: clamp(0.75rem, 2.6vw, 0.95rem);
+  font-weight: 700;
+}
+.score th .grade { white-space: normal; }
+.score td {
+  font-size: clamp(2rem, 9vw, 3.4rem);
+  font-weight: 900;
+  line-height: 1;
+  padding: 0.5rem 0.25rem;
+}
+
+/* The fine print below the bottom row */
+
+.fine,
+.try { padding-bottom: 0.9rem; }
+
+.fine h2,
+.try h2 { font-size: clamp(1.15rem, 3.6vw, 1.4rem); border-bottom-width: var(--hair); }
+
+.fine ul,
+.try ul {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+}
+.fine li + li,
+.try li + li { margin-top: 0.4rem; }
+
+.fine,
+.try { font-size: 0.9375rem; }
+
+p code,
+li code {
+  font: 400 0.875em var(--mono);
+  padding: 0 0.15em;
+  border: var(--hair) solid var(--ink);
+}
+
+.try {
+  margin-top: 0.4rem;
+  border-top: var(--rule) solid var(--ink);
+}
+.try .output { font-size: 0.875rem; }
+
+.repo {
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+
+@media (max-width: 30rem) {
+  .output { font-size: 0.75rem; padding: 0.6rem; }
+}
+
+@media print {
+  .ground { padding: 0; }
+  .skip { display: none; }
+}

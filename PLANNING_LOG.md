@@ -182,3 +182,6 @@ OK
 2026-11-13 — The promo page uses a system font stack only: no font files and no external font host. Decided by: user.
 2026-11-13 — The promo page has no copy button and no JavaScript. Decided by: user.
 2026-11-13 — The ground colour stays open: build a red-ground and a strict black-on-white variant with Impeccable generate, then pick one after seeing both. Decided by: user.
+2026-11-13 — The promo page's ground colour is red (#d7141a) around the white label panel, chosen over the strict black-on-white variant. Decided by: user.
+2026-11-13 — Output blocks on the promo page wrap inside the panel instead of scrolling, and the panel is at most 54rem wide, so every evidence grade stays visible. Decided by: Claude.
+2026-11-13 — The promo page links to EVIDENCE.md, PLANNING_LOG.md, PROCESS.md and the repo by their GitHub URLs, because GitHub Pages serves only docs/; it adds one link line not in PROMO.md, "Get the code on GitHub", as the brief's repo link. Decided by: Claude.
