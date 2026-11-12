@@ -178,3 +178,7 @@ OK
 2026-11-13 — The promo page uses PROMO.md's wording and its unedited output blocks verbatim; design changes only structure and emphasis. Decided by: user.
 2026-11-13 — PRODUCT.md (Impeccable's product record) lives at the repo root and holds product facts only; visual decisions go to DESIGN.md and the surface brief later. Decided by: Claude (following Impeccable's init flow).
 2026-11-13 — The promo page's visual world is The Nutrition Label: the page is one food-label panel whose bottom row grades its own claims. Decided by: user (chosen over the roll's Shelf-Edge Label); Claude (proposed it as the top pick).
+2026-11-13 — The promo page brief is confirmed and saved as designs/promo-page-brief.md. Decided by: user.
+2026-11-13 — The promo page uses a system font stack only: no font files and no external font host. Decided by: user.
+2026-11-13 — The promo page has no copy button and no JavaScript. Decided by: user.
+2026-11-13 — The ground colour stays open: build a red-ground and a strict black-on-white variant with Impeccable generate, then pick one after seeing both. Decided by: user.
