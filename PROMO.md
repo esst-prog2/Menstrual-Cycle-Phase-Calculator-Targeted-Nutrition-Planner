@@ -37,13 +37,13 @@ Nutrients that matter now, and a food that contains each:
   Omega-3: salmon [placeholder] (evidence: Weak)
 ```
 
-I haven't finished this part yet. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.
+These phases only have placeholder foods for now. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.
 
 ---
 
 ## The scoreboard
 
-I checked all 12 phase–nutrient pairings the planner uses against PubMed, Cochrane, NHS and EFSA sources:
+I had my coding agent check all 12 pairings against PubMed, Cochrane, NHS and EFSA sources, and reviewed the result.
 
 | Strong | Moderate | Weak | Speculative |
 |:------:|:--------:|:----:|:-----------:|
@@ -69,7 +69,7 @@ The best way to read the output is as a friendly nudge to eat a variety of foods
 
 ## How I built it
 
-I built it spec-first with OpenSpec: each change was proposed and specified, then implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in [PLANNING_LOG.md](PLANNING_LOG.md) with who made it, and each work step is in [PROCESS.md](PROCESS.md).
+I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the planning log. The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in [PLANNING_LOG.md](PLANNING_LOG.md) with who made it, and each work step is in [PROCESS.md](PROCESS.md).
 
 ---
 
@@ -86,4 +86,4 @@ python3 plan.py --last-period YYYY-MM-DD --cycle-length DAYS
 - To leave out a food category, add a flag such as `--exclude fish`.
 - If the output has a `swap with --prefer-alternative ...` note, copy that flag to use the other food. Put quotes around a two-word nutrient, for example `--prefer-alternative "vitamin c"`.
 
-It remembers recent picks in two local files (`history.json` and `nutrients.md`) in the folder you run it from, so the foods rotate between cycles. Nothing leaves your computer.
+It remembers recent picks in two local files (`history.json` and `nutrients.md`), written next to `plan.py`, so the foods rotate between cycles. Nothing leaves your computer.

@@ -87,7 +87,7 @@ h1 {
   font-size: 1.125rem;
 }
 
-.promise {
+.intro {
   margin: 0.75rem 0 0;
   padding-bottom: 0.9rem;
   border-bottom: var(--bar) solid var(--ink);

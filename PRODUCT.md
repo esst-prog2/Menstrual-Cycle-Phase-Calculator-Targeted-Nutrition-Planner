@@ -20,11 +20,11 @@ A command-line cycle food planner. Given the start date of the last period and t
 
 ## Positioning
 
-The common "eat for your phase" promise is made with total confidence. This tool grades its own advice: Strong, Moderate, Weak or Speculative, shown next to every pick. It labels unfinished data `[placeholder]` instead of hiding it. Other apps are never named or quoted. The promise is described in the project's own words, and the counter-claim rests only on EVIDENCE.md.
+The tool started as a simple phase-and-nutrient planner. While building it, the evidence behind its suggestions turned out to be well supported for only a few; most are weak or just a guess. So instead of hiding that, it grades its own advice (Strong, Moderate, Weak or Speculative) next to every pick and labels unfinished data `[placeholder]`. The evidence counts rest only on EVIDENCE.md. Other apps are never named or quoted.
 
 ## Operating Context
 
-It runs in a terminal. Picks depend on the run date's season and on local history (`history.json`, `nutrients.md` in the folder it runs from), so foods rotate between cycles. Nothing leaves the computer. It was built spec-first with OpenSpec, and the decisions and steps are logged in PLANNING_LOG.md and PROCESS.md.
+It runs in a terminal. Picks depend on the run date's season and on local history (`history.json`, `nutrients.md`, written next to `plan.py`), so foods rotate between cycles. Nothing leaves the computer. It was built with Claude Code as the coding agent; the main changes (the first version and the real food data) went through OpenSpec, and every decision, with whether the user or the agent made it, and every step are logged in PLANNING_LOG.md and PROCESS.md.
 
 ## Capabilities and Constraints
 
@@ -47,7 +47,7 @@ It runs in a terminal. Picks depend on the run date's season and on local histor
 
 ## Product Principles
 
-1. Honesty about evidence beats confident advice.
+1. Show how strong the evidence is; never hide a weak one.
 2. Show the tool's real output; never edit or stage it.
 3. Unfinished parts are labelled, not hidden.
 4. Private and local by design.

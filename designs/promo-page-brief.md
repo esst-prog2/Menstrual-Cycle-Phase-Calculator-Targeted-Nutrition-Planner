@@ -24,7 +24,7 @@ Shaped with Impeccable `/shape` on 2026-11-13. Status: CONFIRMED. Source text: [
 ## 4. Scope and boundaries
 
 - **What it is:** one production-ready static HTML/CSS page in `docs/`, published by GitHub Pages. `docs/` holds only the page and its own files. No build step and no JavaScript.
-- **What doesn't change:** PROMO.md stays the source text. All wording and both output blocks are used word for word, in PROMO.md's section order: headline, promise, day 3 vs day 14, scoreboard, what I chose to build, what it isn't, how I built it, Try it.
+- **What doesn't change:** PROMO.md stays the source text. All wording and both output blocks are used word for word, in PROMO.md's section order: headline, opening paragraph, day 3 vs day 14, scoreboard, what I chose to build, what it isn't, how I built it, Try it.
 - **Not allowed:** invented nutrition values, testimonials, app names, real dates, dates in captions or command lines, and wellness clichés (moon phases, cycle wheels, blush gradients). The label never makes a claim the tool doesn't make. "Not nutrition advice" stays visible.
 
 ## 5. Content and ranges

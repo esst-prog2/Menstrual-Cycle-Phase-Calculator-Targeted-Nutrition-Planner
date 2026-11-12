@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cycle Nutrition Planner: a cycle food planner that tells you when it's guessing</title>
-<meta name="description" content="A cycle food planner that shows you how strong the evidence is behind every suggestion, including when it's weak.">
+<meta name="description" content="A tool that works out which phase of the menstrual cycle someone is in, suggests nutrients with one food for each, and shows how strong the evidence is next to every suggestion.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
   <header class="label-head">
     <h1 id="headline">A cycle food planner that tells you when it's guessing.</h1>
     <p class="row row-name"><span>Cycle Nutrition Planner</span></p>
-    <p class="promise">I wanted to build a simple tool that works out which phase of the menstrual cycle someone is in and which nutrients might help in that phase, with one food for each. While building it, I looked into the evidence behind these suggestions. Only a few of them turned out to be well supported; most are weak or just a guess. So instead of hiding that, the tool shows how strong the evidence is next to every suggestion.</p>
+    <p class="intro">I wanted to build a simple tool that works out which phase of the menstrual cycle someone is in and which nutrients might help in that phase, with one food for each. While building it, I looked into the evidence behind these suggestions. Only a few of them turned out to be well supported; most are weak or just a guess. So instead of hiding that, the tool shows how strong the evidence is next to every suggestion.</p>
   </header>
 
   <section class="days" aria-labelledby="days-title">
@@ -46,13 +46,13 @@ Nutrients that matter now, and a food that contains each:
   Fiber: pears [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
   Zinc: pumpkin seeds [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
   Omega-3: salmon [placeholder] <span class="grade g-weak">(evidence: Weak)</span></code></pre>
-      <p id="after-day14">I haven't finished this part yet. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.</p>
+      <p id="after-day14">These phases only have placeholder foods for now. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.</p>
     </div>
   </section>
 
   <section class="score" aria-labelledby="score-title">
     <h2 id="score-title">The scoreboard</h2>
-    <p>I checked all 12 phase–nutrient pairings the planner uses against PubMed, Cochrane, NHS and EFSA sources:</p>
+    <p>I had my coding agent check all 12 pairings against PubMed, Cochrane, NHS and EFSA sources, and reviewed the result.</p>
     <table>
       <thead>
         <tr>
@@ -90,7 +90,7 @@ Nutrients that matter now, and a food that contains each:
 
   <section class="fine" aria-labelledby="how-title">
     <h2 id="how-title">How I built it</h2>
-    <p>I built it spec-first with OpenSpec: each change was proposed and specified, then implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PLANNING_LOG.md">PLANNING_LOG.md</a> with who made it, and each work step is in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PROCESS.md">PROCESS.md</a>.</p>
+    <p>I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the planning log. The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PLANNING_LOG.md">PLANNING_LOG.md</a> with who made it, and each work step is in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/PROCESS.md">PROCESS.md</a>.</p>
   </section>
 
   <section class="try" aria-labelledby="try-title">
@@ -103,7 +103,7 @@ Nutrients that matter now, and a food that contains each:
       <li>To leave out a food category, add a flag such as <code>--exclude fish</code>.</li>
       <li>If the output has a <code>swap with --prefer-alternative ...</code> note, copy that flag to use the other food. Put quotes around a two-word nutrient, for example <code>--prefer-alternative "vitamin c"</code>.</li>
     </ul>
-    <p>It remembers recent picks in two local files (<code>history.json</code> and <code>nutrients.md</code>) in the folder you run it from, so the foods rotate between cycles. Nothing leaves your computer.</p>
+    <p>It remembers recent picks in two local files (<code>history.json</code> and <code>nutrients.md</code>), written next to <code>plan.py</code>, so the foods rotate between cycles. Nothing leaves your computer.</p>
     <p class="repo"><a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner">Get the code on GitHub</a></p>
   </section>
 
