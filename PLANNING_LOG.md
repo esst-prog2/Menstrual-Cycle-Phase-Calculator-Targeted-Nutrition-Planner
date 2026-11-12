@@ -176,3 +176,4 @@ OK
 2026-11-13 — docs/ holds only the promo page and its own files; the office-hours design doc moves from docs/designs/promo-page.md to designs/promo-page.md. Decided by: user (move it out of docs/); Claude (the designs/ folder).
 2026-11-13 — The promo page is mainly read alone via a shared link (laptop or phone) and may be shown briefly in the demo; its one takeaway is "it tells you when it's guessing". Decided by: user.
 2026-11-13 — The promo page uses PROMO.md's wording and its unedited output blocks verbatim; design changes only structure and emphasis. Decided by: user.
+2026-11-13 — PRODUCT.md (Impeccable's product record) lives at the repo root and holds product facts only; visual decisions go to DESIGN.md and the surface brief later. Decided by: Claude (following Impeccable's init flow).
