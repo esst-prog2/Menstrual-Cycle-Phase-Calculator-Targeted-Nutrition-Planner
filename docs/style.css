@@ -98,7 +98,7 @@ h1 {
   margin: 0.6rem 0 0.25rem;
   font-size: 0.9375rem;
 }
-.key .grade { font-size: 0.875rem; margin: 0 0.15em; }
+.key .grade { font-size: 0.875rem; }
 
 .intro {
   margin: 0.75rem 0 0;
@@ -156,14 +156,19 @@ section > p,
 /* Evidence grades: each grade is its own black-ink mark, so none needs colour */
 
 .grade {
-  padding: 0.05em 0.25em;
+  margin: 0 0.15em;
+  padding: 0 0.25em;
   font-weight: 700;
   white-space: nowrap;
+  border: 2px solid var(--ink);
 }
+/* Loudest at the weak end: the guessing is what the page is about. */
 .g-strong { background: var(--ink); color: var(--stock); }
-.g-moderate { outline: 2px solid var(--ink); outline-offset: 1px; }
-.g-weak { outline: 2px dashed var(--ink); outline-offset: 1px; }
-.g-speculative { outline: 3px dotted var(--ink); outline-offset: 1px; }
+.g-weak { border: 3px dashed var(--ink); }
+.g-speculative {
+  border: 5px solid var(--ink);
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 2px, var(--stock) 2px 4px) 5;
+}
 
 /* Skip links appear only on keyboard focus */
 
