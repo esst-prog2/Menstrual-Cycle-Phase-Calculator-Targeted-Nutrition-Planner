@@ -191,3 +191,4 @@ OK
 2026-11-13 — PROMO.md and the promo page: the day-14 note becomes one sentence, "The other three phases only have placeholder foods for now, and the tool says so.", and How I built it keeps the new planning-log sentence plus "Each work step is in PROCESS.md." Decided by: user.
 2026-11-13 — "planning log" in How I built it links to PLANNING_LOG.md in PROMO.md and on the promo page. Decided by: user.
 2026-11-13 — PROMO.md's intro paragraph (and the promo page's copy and meta description) now describes what the tool does: phase, nutrients with one food each, rotation, exclusions, real USDA data for the Menstrual phase, and evidence strength next to every suggestion; it replaces the motivation paragraph. Decided by: user.
+2026-11-13 — PRODUCT.md Positioning describes what the tool does, matching the new PROMO.md intro, instead of the motivation story. Decided by: user.

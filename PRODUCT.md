@@ -20,7 +20,7 @@ A command-line cycle food planner. Given the start date of the last period and t
 
 ## Positioning
 
-The tool started as a simple phase-and-nutrient planner. While building it, the evidence behind its suggestions turned out to be well supported for only a few; most are weak or just a guess. So instead of hiding that, it grades its own advice (Strong, Moderate, Weak or Speculative) next to every pick and labels unfinished data `[placeholder]`. The evidence counts rest only on EVIDENCE.md. Other apps are never named or quoted.
+It works out the cycle phase, suggests the nutrients that may matter in that phase with one food for each, rotates the foods from cycle to cycle, never suggests an excluded food, and uses real USDA data for the Menstrual phase. Next to every suggestion it shows how strong the evidence is (Strong, Moderate, Weak or Speculative), and it labels unfinished data `[placeholder]`. The evidence counts rest only on EVIDENCE.md. Other apps are never named or quoted.
 
 ## Operating Context
 
