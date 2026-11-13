@@ -192,3 +192,4 @@ OK
 2026-11-13 — "planning log" in How I built it links to PLANNING_LOG.md in PROMO.md and on the promo page. Decided by: user.
 2026-11-13 — PROMO.md's intro paragraph (and the promo page's copy and meta description) now describes what the tool does: phase, nutrients with one food each, rotation, exclusions, real USDA data for the Menstrual phase, and evidence strength next to every suggestion; it replaces the motivation paragraph. Decided by: user.
 2026-11-13 — PRODUCT.md Positioning describes what the tool does, matching the new PROMO.md intro, instead of the motivation story. Decided by: user.
+2026-11-13 — The critique's label-discipline finding (54rem panel vs the contract's ~40rem, bulleted second half, 3 line-length warnings) is known and left on purpose for now. Decided by: user.
