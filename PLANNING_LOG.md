@@ -199,3 +199,4 @@ OK
 2026-11-13 — After the re-critique: fix both P1s (heavier weak marks; a course line) and the outline spacing; leave the phone first screen and the Try it ending for later. The course line takes the shape "Course · year", naming the course but not the user. Decided by: user.
 2026-11-13 — PROMO.md and the promo page show the course line "Advanced Programming · 2026" (a label row under the product-name row on the page). Decided by: user.
 2026-11-13 — The promo page's design rounds are closed: the phone first screen (no proof above the fold) and the small Try it ending are known and left on purpose, alongside the earlier label-discipline finding; no further critique. Decided by: user.
+2026-11-13 — The promo page is published with GitHub Pages from main /docs at https://esst-prog2.github.io/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/. Decided by: user.
