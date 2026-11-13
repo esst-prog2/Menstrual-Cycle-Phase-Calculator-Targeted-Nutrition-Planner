@@ -2,6 +2,8 @@
 
 Python · command line · offline
 
+Advanced Programming · 2026
+
 **A cycle food planner that tells you when it's guessing.**
 
 This tool works out which phase of the menstrual cycle someone is in, then suggests the nutrients that may matter in that phase, with one food for each. It rotates the foods from cycle to cycle, never suggests anything you've excluded, and uses real USDA data for the Menstrual phase. Next to every suggestion it shows how strong the evidence is, from Strong to Speculative, so you always know how much to trust it.
