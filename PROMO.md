@@ -1,5 +1,7 @@
 # Cycle Nutrition Planner
 
+Python · command line · offline
+
 **A cycle food planner that tells you when it's guessing.**
 
 This tool works out which phase of the menstrual cycle someone is in, then suggests the nutrients that may matter in that phase, with one food for each. It rotates the foods from cycle to cycle, never suggests anything you've excluded, and uses real USDA data for the Menstrual phase. Next to every suggestion it shows how strong the evidence is, from Strong to Speculative, so you always know how much to trust it.
@@ -7,6 +9,8 @@ This tool works out which phase of the menstrual cycle someone is in, then sugge
 ---
 
 ## Same tool, two different days
+
+Evidence grades, from strongest to weakest: Strong, Moderate, Weak, Speculative.
 
 **Day 3, for a period that started 2 days ago (28-day cycle).** Real food data, and evidence that holds up:
 
@@ -44,6 +48,8 @@ The other three phases only have placeholder foods for now, and the tool says so
 ## The scoreboard
 
 I had my coding agent check all 12 pairings against PubMed, Cochrane, NHS and EFSA sources, and reviewed the result.
+
+**12 pairings checked**
 
 | Strong | Moderate | Weak | Speculative |
 |:------:|:--------:|:----:|:-----------:|

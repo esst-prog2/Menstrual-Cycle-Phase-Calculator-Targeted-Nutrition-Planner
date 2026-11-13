@@ -13,12 +13,13 @@
 
   <header class="label-head">
     <h1 id="headline">A cycle food planner that tells you when it's guessing.</h1>
-    <p class="row row-name"><span>Cycle Nutrition Planner</span></p>
+    <p class="row row-name"><span>Cycle Nutrition Planner</span><span class="row-value">Python · command line · offline</span></p>
     <p class="intro">This tool works out which phase of the menstrual cycle someone is in, then suggests the nutrients that may matter in that phase, with one food for each. It rotates the foods from cycle to cycle, never suggests anything you've excluded, and uses real USDA data for the Menstrual phase. Next to every suggestion it shows how strong the evidence is, from Strong to Speculative, so you always know how much to trust it.</p>
   </header>
 
   <section class="days" aria-labelledby="days-title">
     <h2 id="days-title">Same tool, two different days</h2>
+    <p class="key">Evidence grades, from strongest to weakest: <span class="grade g-strong">Strong</span>, <span class="grade g-moderate">Moderate</span>, <span class="grade g-weak">Weak</span>, <span class="grade g-speculative">Speculative</span>.</p>
 
     <div class="day">
       <p class="caption"><strong>Day 3, for a period that started 2 days ago (28-day cycle).</strong> Real food data, and evidence that holds up:</p>
@@ -54,6 +55,7 @@
     <h2 id="score-title">The scoreboard</h2>
     <p>I had my coding agent check all 12 pairings against PubMed, Cochrane, NHS and EFSA sources, and reviewed the result.</p>
     <table>
+      <caption>12 pairings checked</caption>
       <thead>
         <tr>
           <th scope="col"><span class="grade g-strong">Strong</span></th>
