@@ -37,7 +37,7 @@ Nutrients that matter now, and a food that contains each:
   Omega-3: salmon [placeholder] (evidence: Weak)
 ```
 
-These phases only have placeholder foods for now. These foods are placeholders, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.
+The other three phases only have placeholder foods for now, and the tool says so. It also says the science linking these nutrients to this phase is speculative or weak. It doesn't hide that.
 
 ---
 
@@ -69,7 +69,7 @@ The best way to read the output is as a friendly nudge to eat a variety of foods
 
 ## How I built it
 
-I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the planning log. The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each decision, such as a number, a name or a threshold, is recorded in [PLANNING_LOG.md](PLANNING_LOG.md) with who made it, and each work step is in [PROCESS.md](PROCESS.md).
+I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the planning log. The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each work step is in [PROCESS.md](PROCESS.md).
 
 ---
 
