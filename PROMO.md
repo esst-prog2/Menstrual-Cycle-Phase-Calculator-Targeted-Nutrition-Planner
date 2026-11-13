@@ -2,7 +2,7 @@
 
 **A cycle food planner that tells you when it's guessing.**
 
-I wanted to build a simple tool that works out which phase of the menstrual cycle someone is in and which nutrients might help in that phase, with one food for each. While building it, I looked into the evidence behind these suggestions. Only a few of them turned out to be well supported; most are weak or just a guess. So instead of hiding that, the tool shows how strong the evidence is next to every suggestion.
+This tool works out which phase of the menstrual cycle someone is in, then suggests the nutrients that may matter in that phase, with one food for each. It rotates the foods from cycle to cycle, never suggests anything you've excluded, and uses real USDA data for the Menstrual phase. Next to every suggestion it shows how strong the evidence is, from Strong to Speculative, so you always know how much to trust it.
 
 ---
 
