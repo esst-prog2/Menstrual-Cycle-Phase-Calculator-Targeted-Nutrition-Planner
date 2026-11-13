@@ -69,7 +69,7 @@ The best way to read the output is as a friendly nudge to eat a variety of foods
 
 ## How I built it
 
-I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the planning log. The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each work step is in [PROCESS.md](PROCESS.md).
+I built it with Claude Code as my coding agent. Every decision, and whether I or the agent made it, is recorded in the [planning log](PLANNING_LOG.md). The main changes, the first version and the real food data, went through OpenSpec: proposed, specified, implemented and archived. Each work step is in [PROCESS.md](PROCESS.md).
 
 ---
 
