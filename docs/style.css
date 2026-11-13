@@ -129,17 +129,28 @@ section > p,
 }
 .output code { font: inherit; }
 
+/* Each output line wraps with a hanging indent, so a grade that wraps
+   stays under its own food instead of starting at the left edge. */
+.output.lines { white-space: normal; }
+.output.lines .ln {
+  display: block;
+  min-height: 1.6em;
+  padding-left: 4ch;
+  text-indent: -4ch;
+  white-space: pre-wrap;
+}
+
 /* Evidence grades: each grade is its own black-ink mark, so none needs colour */
 
 .grade {
-  padding: 0 0.2em;
+  padding: 0.05em 0.25em;
   font-weight: 700;
   white-space: nowrap;
 }
 .g-strong { background: var(--ink); color: var(--stock); }
-.g-moderate { outline: 2px solid var(--ink); outline-offset: -2px; }
-.g-weak { outline: 2px dashed var(--ink); outline-offset: -2px; }
-.g-speculative { outline: 2px dotted var(--ink); outline-offset: -2px; }
+.g-moderate { outline: 2px solid var(--ink); outline-offset: 1px; }
+.g-weak { outline: 2px dashed var(--ink); outline-offset: 1px; }
+.g-speculative { outline: 3px dotted var(--ink); outline-offset: 1px; }
 
 /* Skip links appear only on keyboard focus */
 
