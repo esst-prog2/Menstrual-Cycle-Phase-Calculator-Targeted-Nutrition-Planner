@@ -206,3 +206,4 @@ OK
 2026-11-19 — The video is made with HyperFrames 0.9.70 (telemetry off), its source kept in video/, the runs on invented 2030 dates (October, November, December), and the exclusion beat uses --exclude meat because --exclude fish changes nothing on a Menstrual day. Decided by: Claude.
 2026-11-19 — The video goes on the promo page as a new section after "Same tool, two different days", with controls, a poster frame and no autoplay, styled inline so style.css stays unchanged. Decided by: Claude.
 2026-11-19 — The local HyperFrames folders video/.hyperframes/ and video/renders/ are deleted after the render, because they hold local paths and are not needed; both stay in video/.gitignore. Decided by: user.
+2026-11-19 — The promo video is published on the live promo page by merging promo-video into main (pull request #8). Decided by: user.
