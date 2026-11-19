@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Three cycles, one planner</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <!--
+      Three cycles, one planner: a 30-second silent promo film.
+      Every terminal line below is verbatim output of plan.py, run through
+      main(argv, today=...) in an empty folder on invented 2030 dates
+      (see video/README.md). The prompt is a bare "$ ": no user, host or path.
+    -->
+    <style>
+      :root {
+        --ground: #d7141a;
+        --ink: #000;
+        --stock: #fff;
+        --sans: "Inter", sans-serif;
+        --mono: "JetBrains Mono", monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+
+      /* ---------- captions above the panel ---------- */
+      .cap {
+        position: absolute;
+        left: 80px;
+        top: 70px;
+        width: 1760px;
+      }
+      .kicker {
+        font: 900 30px/1 var(--sans);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-top: 12px solid var(--ink);
+        padding-top: 16px;
+        display: inline-block;
+      }
+      .head {
+        position: absolute;
+        left: 0;
+        top: 70px;
+        font: 900 64px/1.05 var(--sans);
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      /* ---------- the terminal panel (white label stock) ---------- */
+      .panel {
+        position: absolute;
+        left: 80px;
+        top: 290px;
+        width: 1760px;
+        background: var(--stock);
+        border: 4px solid var(--ink);
+        border-top-width: 12px;
+        padding: 34px 36px;
+        font: 400 28px/1.5 var(--mono);
+        color: var(--ink);
+      }
+      .ln { white-space: pre-wrap; display: block; min-height: 1.45em; }
+      .typed { display: inline-block; white-space: pre; }
+      .dim { color: #555; }
+      .slot { display: grid; }
+      .slot > .ver { grid-area: 1 / 1; position: relative; }
+      .hl {
+        position: absolute;
+        left: -14px;
+        right: -14px;
+        top: 0;
+        bottom: 0;
+        background: var(--ink);
+        transform-origin: left center;
+      }
+      .ver .txt { position: relative; }
+      .strike {
+        position: absolute;
+        left: 0;
+        top: 0.72em;
+        height: 4px;
+        width: 100%;
+        background: var(--ground);
+        transform-origin: left center;
+      }
+
+      /* ---------- the three-cycle table ---------- */
+      .table {
+        position: absolute;
+        left: 80px;
+        top: 290px;
+        width: 1760px;
+        background: var(--stock);
+        border: 4px solid var(--ink);
+        border-top-width: 12px;
+        padding: 20px 44px 30px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 360px 1fr 1fr 1fr;
+        align-items: baseline;
+        border-bottom: 1px solid var(--ink);
+        padding: 22px 0;
+      }
+      .row.hdr { border-bottom: 4px solid var(--ink); padding: 14px 0; }
+      .row:last-child { border-bottom: 0; }
+      .hdr .c { font: 900 30px/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+      .nut { font: 900 42px/1.1 var(--sans); }
+      .tier { display: block; font: 700 28px/1.3 var(--sans); margin-top: 6px; }
+      .food { font: 700 42px/1.15 var(--sans); padding-right: 24px; }
+
+      /* ---------- end card ---------- */
+      .end {
+        position: absolute;
+        left: 80px;
+        top: 200px;
+        width: 1760px;
+      }
+      .end .name { font: 900 120px/1 var(--sans); letter-spacing: -0.03em; }
+      .end .what { font: 700 46px/1.25 var(--sans); margin-top: 36px; }
+      .end .cmd {
+        display: inline-block;
+        margin-top: 56px;
+        background: var(--stock);
+        border: 4px solid var(--ink);
+        padding: 22px 34px;
+        font: 400 34px/1 var(--mono);
+      }
+
+      /* ---------- honesty tag, always on ---------- */
+      #tag {
+        position: absolute;
+        right: 80px;
+        bottom: 30px;
+        font: 700 28px/1 var(--sans);
+        color: var(--ink);
+      }
+      .cap#cap-end { top: 70px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080">
+
+      <!-- =================== Cycle 1 · October (0 – 7.5 s) =================== -->
+      <div id="c1" class="clip" data-start="0" data-duration="7.5" data-track-index="0">
+        <div class="cap">
+          <div id="c1-k" class="kicker">Cycle 1 · October</div>
+          <div id="c1-h1" class="head">Day 3 of a period. What should I eat?</div>
+          <div id="c1-h2" class="head">Not in the mood for broccoli? Take the swap.</div>
+        </div>
+        <div class="panel">
+          <span class="ln"><span class="typed" id="c1-cmd">$ python3 plan.py --last-period 2030-10-04 --cycle-length 28</span><span class="typed" id="c1-cmd2"> --prefer-alternative "vitamin c"</span></span>
+          <span class="ln dim" id="c1-o1">Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c1-o2">Day 3 of your 28-day cycle: Menstrual phase</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c1-o3">Nutrients that matter now, and a food that contains each:</span>
+          <span class="ln" id="c1-o4">  Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] (evidence: Strong)</span>
+          <div class="slot" id="c1-o5">
+            <div class="ver" id="c1-old">
+              <div class="hl" id="c1-hl"></div>
+              <span class="ln txt" id="c1-old-t">  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] (evidence: Moderate)
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c</span>
+            </div>
+            <div class="ver" id="c1-new">
+              <div class="hl" id="c1-hl2"></div>
+              <span class="ln txt" id="c1-new-t">  Vitamin C: oranges [53.2 mg/100 g, 67% NRV, FDC 169097] (evidence: Moderate)
+    note: swapped in with --prefer-alternative</span>
+            </div>
+          </div>
+          <span class="ln" id="c1-o6">  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] (evidence: Moderate)</span>
+        </div>
+      </div>
+
+      <!-- =================== Cycle 2 · November (7.5 – 13.5 s) =================== -->
+      <div id="c2" class="clip" data-start="7.5" data-duration="6" data-track-index="0">
+        <div class="cap">
+          <div id="c2-k" class="kicker">Cycle 2 · November</div>
+          <div id="c2-h1" class="head">Next period, different foods.</div>
+          <div id="c2-h2" class="head">Last cycle's picks sit out for 2 cycles.</div>
+        </div>
+        <div class="panel">
+          <span class="ln"><span class="typed" id="c2-cmd">$ python3 plan.py --last-period 2030-11-01 --cycle-length 28</span></span>
+          <span class="ln dim" id="c2-o1">Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c2-o2">Day 3 of your 28-day cycle: Menstrual phase</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c2-o3">Nutrients that matter now, and a food that contains each:</span>
+          <span class="ln" id="c2-o4">  Iron: spinach, cooked [3.57 mg/100 g, 26% NRV, FDC 168463] (evidence: Strong)</span>
+          <span class="ln" id="c2-o5">  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] (evidence: Moderate)
+    note: chosen over red bell peppers - out of season; swap with --prefer-alternative vitamin c</span>
+          <span class="ln" id="c2-o6">  Magnesium: almonds (raw) [270 mg/100 g, 72% NRV, FDC 170567] (evidence: Moderate)</span>
+        </div>
+      </div>
+
+      <!-- =================== Cycle 3 · December (13.5 – 20.5 s) =================== -->
+      <div id="c3" class="clip" data-start="13.5" data-duration="7" data-track-index="0">
+        <div class="cap">
+          <div id="c3-k" class="kicker">Cycle 3 · December</div>
+          <div id="c3-h1" class="head">Gone meat-free this month?</div>
+          <div id="c3-h2" class="head">Exclude it, and it is never shown.</div>
+        </div>
+        <div class="panel">
+          <span class="ln"><span class="typed" id="c3-cmd">$ python3 plan.py --last-period 2030-11-29 --cycle-length 28</span><span class="typed" id="c3-cmd2"> --exclude meat</span></span>
+          <span class="ln dim" id="c3-o1">Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c3-o2">Day 3 of your 28-day cycle: Menstrual phase</span>
+          <span class="ln"> </span>
+          <span class="ln" id="c3-o3">Nutrients that matter now, and a food that contains each:</span>
+          <div class="slot" id="c3-o4">
+            <div class="ver" id="c3-old">
+              <div class="hl" id="c3-hl"></div>
+              <span class="ln txt" id="c3-old-t">  Iron: ground beef, cooked [2.67 mg/100 g, 19% NRV, FDC 172161] (evidence: Strong)</span>
+            </div>
+            <div class="ver" id="c3-new">
+              <div class="hl" id="c3-hl2"></div>
+              <span class="ln txt" id="c3-new-t">  Iron: sardines (canned in oil) [2.92 mg/100 g, 21% NRV, FDC 175139] (evidence: Strong)</span>
+            </div>
+          </div>
+          <span class="ln" id="c3-o5">  Vitamin C: green kiwi [92.7 mg/100 g, 116% NRV, FDC 168153] (evidence: Moderate)
+    note: chosen over red bell peppers - out of season; swap with --prefer-alternative vitamin c</span>
+          <span class="ln" id="c3-o6">  Magnesium: black beans, cooked [70 mg/100 g, 19% NRV, FDC 173735] (evidence: Moderate)</span>
+        </div>
+      </div>
+
+      <!-- =================== Three cycles side by side (20.5 – 25.5 s) =================== -->
+      <div id="sum" class="clip" data-start="20.5" data-duration="5" data-track-index="0">
+        <div class="cap">
+          <div id="sum-k" class="kicker">Day 3, three cycles in a row</div>
+          <div id="sum-h" class="head">9 picks. Not one repeated.</div>
+        </div>
+        <div class="table">
+          <div class="row hdr">
+            <span class="c"></span>
+            <span class="c" id="sum-m1">October</span>
+            <span class="c" id="sum-m2">November</span>
+            <span class="c" id="sum-m3">December</span>
+          </div>
+          <div class="row">
+            <span class="nut">Iron<span class="tier">evidence: Strong</span></span>
+            <span class="food m1">lentils</span>
+            <span class="food m2">spinach</span>
+            <span class="food m3">sardines</span>
+          </div>
+          <div class="row">
+            <span class="nut">Vitamin C<span class="tier">evidence: Moderate</span></span>
+            <span class="food m1">oranges</span>
+            <span class="food m2">broccoli</span>
+            <span class="food m3">green kiwi</span>
+          </div>
+          <div class="row">
+            <span class="nut">Magnesium<span class="tier">evidence: Moderate</span></span>
+            <span class="food m1">pumpkin seeds</span>
+            <span class="food m2">almonds</span>
+            <span class="food m3">black beans</span>
+          </div>
+        </div>
+        <div id="sum-note" class="kicker" style="position:absolute; left:80px; top:930px; border-top:0; padding-top:0; text-transform:none; letter-spacing:0; font-weight:700;">The picks are saved in history.json, on your own computer.</div>
+      </div>
+
+      <!-- =================== End card (25.5 – 30 s) =================== -->
+      <div id="end" class="clip" data-start="25.5" data-duration="4.5" data-track-index="0">
+        <div class="end">
+          <div id="end-name" class="name">Cycle Nutrition Planner</div>
+          <div id="end-what" class="what">Foods that rotate, exclusions that hold,<br />and the evidence grade next to every pick.</div>
+          <div id="end-cmd" class="cmd">python3 plan.py --last-period YYYY-MM-DD --cycle-length DAYS</div>
+        </div>
+      </div>
+
+      <div id="tag">Real plan.py output · invented dates · not nutrition advice</div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const IN = { opacity: 0, y: 14 };
+      const ON = { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" };
+
+      // Type a single-line command: reveal it left to right one character per step.
+      function type(sel, at, chars, dur) {
+        tl.to(sel, { clipPath: "inset(0 0% 0 0)", duration: dur, ease: `steps(${chars})` }, at);
+      }
+      // Cascade the output lines of one run, as a terminal prints them.
+      function output(prefix, at, ids) {
+        ids.forEach((id, i) => tl.fromTo(`#${prefix}-${id}`, { opacity: 0 }, { opacity: 1, duration: 0.06 }, at + i * 0.09));
+      }
+      // Black highlight bar behind a row, with the row text turned white.
+      function mark(hl, txt, at) {
+        tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power3.out" }, at);
+        tl.fromTo(txt, { color: "#000" }, { color: "#fff", duration: 0.15 }, at + 0.1);
+      }
+      function heads(a, b, at) {
+        tl.fromTo(a, { opacity: 1, y: 0 }, { opacity: 0, y: -14, duration: 0.2, ease: "power2.in", immediateRender: false }, at);
+        tl.fromTo(b, IN, { ...ON }, at + 0.2);
+      }
+
+      // ---- Cycle 1 (0 – 7.5) ----
+      // Stable baselines: hidden until their own tween runs.
+      gsap.set(["#c1-h2", "#c1-new", "#c2-h2", "#c3-h2", "#c3-new"], { opacity: 0 });
+      gsap.set(["#c1-cmd2", "#c2-cmd", "#c3-cmd", "#c3-cmd2"], { clipPath: "inset(0 100% 0 0)" });
+      // The first command is already typed on frame 0, so the opening frame shows the tool.
+      output("c1", 0.25, ["o1", "o2", "o3", "o4", "o5", "o6"]);
+      heads("#c1-h1", "#c1-h2", 3.4);
+      mark("#c1-hl", "#c1-old-t", 3.6);
+      type("#c1-cmd2", 4.3, 33, 0.7);
+      tl.fromTo("#c1-old", { opacity: 1 }, { opacity: 0, duration: 0.15 }, 5.2);
+      tl.to("#c1-new", { opacity: 1, duration: 0.15 }, 5.3);
+      mark("#c1-hl2", "#c1-new-t", 5.3);
+
+      // ---- Cycle 2 (7.5 – 13.5) ----
+      tl.fromTo("#c2-k", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, 7.5);
+      tl.fromTo("#c2-h1", IN, { ...ON }, 7.6);
+      type("#c2-cmd", 7.7, 62, 0.8);
+      output("c2", 8.6, ["o1", "o2", "o3", "o4", "o5", "o6"]);
+      heads("#c2-h1", "#c2-h2", 10.6);
+
+      // ---- Cycle 3 (13.5 – 20.5) ----
+      tl.fromTo("#c3-k", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, 13.5);
+      tl.fromTo("#c3-h1", IN, { ...ON }, 13.6);
+      type("#c3-cmd", 13.7, 62, 0.8);
+      output("c3", 14.6, ["o1", "o2", "o3", "o4", "o5", "o6"]);
+      mark("#c3-hl", "#c3-old-t", 15.9);
+      type("#c3-cmd2", 16.5, 15, 0.45);
+      tl.fromTo("#c3-old", { opacity: 1 }, { opacity: 0, duration: 0.15 }, 17.2);
+      tl.to("#c3-new", { opacity: 1, duration: 0.15 }, 17.3);
+      mark("#c3-hl2", "#c3-new-t", 17.3);
+      heads("#c3-h1", "#c3-h2", 17.6);
+
+      // ---- Summary (20.5 – 25.5) ----
+      tl.fromTo("#sum-k", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, 20.5);
+      tl.fromTo("#sum .table", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 20.55);
+      tl.fromTo(["#sum-m1", "#sum .m1"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 21.0);
+      tl.fromTo(["#sum-m2", "#sum .m2"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 21.4);
+      tl.fromTo(["#sum-m3", "#sum .m3"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 21.8);
+      tl.fromTo("#sum-h", IN, { ...ON }, 22.1);
+      tl.fromTo("#sum-note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 22.4);
+
+      // ---- End card (25.5 – 30) ----
+      tl.fromTo("#end-name", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 25.5);
+      tl.fromTo("#end-what", IN, { ...ON }, 25.9);
+      tl.fromTo("#end-cmd", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 26.2);
+      tl.set({}, {}, 30);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
