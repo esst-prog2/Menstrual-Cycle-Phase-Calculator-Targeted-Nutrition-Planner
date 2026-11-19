@@ -200,3 +200,9 @@ OK
 2026-11-13 — PROMO.md and the promo page show the course line "Advanced Programming · 2026" (a label row under the product-name row on the page). Decided by: user.
 2026-11-13 — The promo page's design rounds are closed: the phone first screen (no proof above the fold) and the small Try it ending are known and left on purpose, alongside the earlier label-discipline finding; no further critique. Decided by: user.
 2026-11-13 — The promo page is published with GitHub Pages from main /docs at https://esst-prog2.github.io/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/. Decided by: user.
+2026-11-19 — The promo video is idea 1, "Three cycles, one person": day 3 of three periods in a row, built from real plan.py runs, 30 seconds and silent. Decided by: user.
+2026-11-19 — FFmpeg is installed by the user with Homebrew, not downloaded by the agent. Decided by: user.
+2026-11-19 — The video uses invented dates only, and no frame shows a username, folder path or real terminal prompt (the prompt is a bare "$ "). Decided by: user.
+2026-11-19 — The video is made with HyperFrames 0.9.70 (telemetry off), its source kept in video/, the runs on invented 2030 dates (October, November, December), and the exclusion beat uses --exclude meat because --exclude fish changes nothing on a Menstrual day. Decided by: Claude.
+2026-11-19 — The video goes on the promo page as a new section after "Same tool, two different days", with controls, a poster frame and no autoplay, styled inline so style.css stays unchanged. Decided by: Claude.
+2026-11-19 — The local HyperFrames folders video/.hyperframes/ and video/renders/ are deleted after the render, because they hold local paths and are not needed; both stay in video/.gitignore. Decided by: user.
