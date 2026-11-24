@@ -54,9 +54,15 @@
   .reveal table { width: 100%; border-collapse: collapse; font-size: 17px; margin: 0 0 16px; }
   .reveal th, .reveal td { line-height: 1.4; padding: 9px 9px; border-bottom: 1px solid var(--ink); text-align: left; vertical-align: top; }
   .reveal th { border-bottom: 4px solid var(--ink); font-weight: 700; }
-  .reveal td .grade { display: inline-block; margin-bottom: 4px; }
-  .reveal td code { font-family: var(--mono); font-size: 15px; }
-  .reveal .file { font: 700 18px var(--mono); margin-bottom: 6px; }
+  .reveal td .grade { display: inline-block; margin-top: 4px; font-size: 18px; }
+  .reveal td code { line-height: 1.6; font-family: var(--mono); font-size: 15px; }
+  .reveal h1 { margin: 0 0 6px; font-size: 44px; font-weight: 900; line-height: 1.02; letter-spacing: -0.015em; }
+  .reveal h2.sub { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+  .reveal .also { font-size: 22px; margin: 0; }
+  .reveal .say.tight { font-size: 23px; margin-bottom: 8px; }
+  .reveal .cycles { font-size: 24px; }
+  .reveal .cycles td code { font-size: 17px; }
+  .reveal .cycles th:first-child { width: 26%; }
   .reveal .controls, .reveal .progress { color: var(--stock); }
   .reveal .slide-number { background: var(--ink); color: var(--stock); font-family: var(--sans); }
 </style>
@@ -65,11 +71,12 @@
 <div class="reveal">
 <div class="slides">
 
-<!-- All dates are invented. The output is from plan.py run on 2030-10-20 in an empty folder. -->
+<!-- All dates are invented. The output is from plan.py run in an empty folder on 2030-10-20 (slides 1-4) and on 2030-10-20 then 2030-11-17 (slide 5). -->
 
-<section aria-labelledby="s1">
+<section aria-labelledby="title">
   <p class="step"><span>1 / 5 · A Menstrual day</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s1">Real foods, with their source and evidence</h2>
+  <h1 id="title">A cycle food planner that tells you when it's guessing.</h1>
+  <h2 class="sub">A Menstrual day: real foods, with their source and evidence</h2>
   <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-18 --cycle-length 28</span>
 Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
 
@@ -80,7 +87,8 @@ Nutrients that matter now, and a food that contains each:
   Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
     note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
   Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
-  <p class="say">Each food shows its amount per 100 g, its share of the EU reference value (NRV) and its USDA FoodData Central ID, next to how strong the evidence is. In autumn, broccoli is chosen over oranges.</p>
+  <p class="say tight">Each food shows its amount per 100 g, its share of the EU reference value (NRV) and its USDA FoodData Central ID, next to how strong the evidence is. In autumn, broccoli is chosen over oranges.</p>
+  <p class="also">Each run also writes nutrients.md, with the same foods and notes plus the source for each evidence grade.</p>
 </section>
 
 <section aria-labelledby="s2">
@@ -131,18 +139,17 @@ Nutrients that matter now, and a food that contains each:
 </section>
 
 <section aria-labelledby="s5">
-  <p class="step"><span>5 / 5 · The file</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s5">Everything written down, with sources</h2>
-  <p class="file">nutrients.md</p>
-  <table>
-    <thead><tr><th>Nutrient</th><th>Evidence</th><th>Food</th><th>Notes</th></tr></thead>
+  <p class="step"><span>5 / 5 · Rotation</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s5">Two cycles in a row, three new foods</h2>
+  <table class="cycles">
+    <thead><tr><th>Day 3, Menstrual phase</th><th>Cycle 1: period started 2030-10-18</th><th>Cycle 2: period started 2030-11-15</th></tr></thead>
     <tbody>
-      <tr><td>Iron</td><td><span class="grade g-strong">Strong</span><br>Cochrane CD009747 (2016); NHS</td><td>spinach, cooked <code>[3.57 mg/100 g, 26% NRV, FDC 168463]</code></td><td>swapped in with --prefer-alternative</td></tr>
-      <tr><td>Vitamin C</td><td><span class="grade g-moderate">Moderate</span><br>EFSA 2014 opinion; Cook &amp; Reddy 2001</td><td>broccoli, cooked <code>[64.9 mg/100 g, 81% NRV, FDC 169967]</code></td><td>chosen over oranges - out of season; swap with --prefer-alternative vitamin c</td></tr>
-      <tr><td>Magnesium</td><td><span class="grade g-moderate">Moderate</span><br>Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020</td><td>pumpkin seeds (dried) <code>[592 mg/100 g, 158% NRV, FDC 170556]</code></td><td></td></tr>
+      <tr><td>Iron <span class="grade g-strong">Strong</span></td><td>lentils, cooked<br><code>[3.33 mg/100 g, 24% NRV, FDC 172421]</code></td><td><span class="hit">spinach, cooked</span><br><code>[3.57 mg/100 g, 26% NRV, FDC 168463]</code></td></tr>
+      <tr><td>Vitamin C <span class="grade g-moderate">Moderate</span></td><td>broccoli, cooked<br><code>[64.9 mg/100 g, 81% NRV, FDC 169967]</code></td><td><span class="hit">oranges</span><br><code>[53.2 mg/100 g, 67% NRV, FDC 169097]</code></td></tr>
+      <tr><td>Magnesium <span class="grade g-moderate">Moderate</span></td><td>pumpkin seeds (dried)<br><code>[592 mg/100 g, 158% NRV, FDC 170556]</code></td><td><span class="hit">almonds (raw)</span><br><code>[270 mg/100 g, 72% NRV, FDC 170567]</code></td></tr>
     </tbody>
   </table>
-  <p class="say">Each run writes nutrients.md with the same foods and notes, plus the source for each evidence grade. A food is kept for the whole cycle, and history.json stops it from being suggested again for the same nutrient for the next 2 cycles.</p>
+  <p class="say">The same command, one cycle apart, in the same folder. A food is kept for the whole cycle, and history.json stops it from being suggested again for the same nutrient for the next 2 cycles, so the foods vary from month to month.</p>
 </section>
 
 </div>

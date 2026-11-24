@@ -209,3 +209,7 @@ OK
 2026-11-19 — The promo video is published on the live promo page by merging promo-video into main (pull request #8). Decided by: user.
 2026-11-24 — The five demo slides are one reveal.js HTML file at docs/slides/index.html, so GitHub Pages serves them at /slides/ of the project site; one slide per demo step in README Section 1. Decided by: user.
 2026-11-24 — The slides load reveal.js 5.1.0 from the jsDelivr CDN, use the promo page's look (white panel on red ground, same evidence badges), and show real plan.py output from an empty scratch folder on invented 2030 dates (today 2030-10-20; periods starting 2030-10-18 and 2030-10-06). The rotation is one sentence on slide 5, not a sixth slide. Decided by: Claude.
+2026-11-24 — Slide 5 shows rotation instead of the nutrients.md table: two consecutive cycles side by side from real runs, and slide 1 mentions nutrients.md in one line. Decided by: user.
+2026-11-24 — Slide 1 carries the promo page's headline, "A cycle food planner that tells you when it's guessing.", as its title. Decided by: user.
+2026-11-24 — reveal.js stays pinned to the exact version 5.1.0 in all three CDN links (reset.css, reveal.css, reveal.js). Decided by: user.
+2026-11-24 — The rotation slide uses two runs in one empty folder on invented dates: today 2030-10-20 with a period starting 2030-10-18, then today 2030-11-17 with one starting 2030-11-15. They are shown as a table (nutrient by cycle), with the second cycle's foods highlighted. Decided by: Claude.
