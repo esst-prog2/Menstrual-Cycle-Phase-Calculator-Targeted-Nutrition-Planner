@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cycle Nutrition Planner: the demo in five slides</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<style>
+  /* Same look as the promo page: a white label panel on a red ground. */
+  :root {
+    --ink: #000;
+    --stock: #fff;
+    --ground: #d7141a;
+    --sans: "Helvetica Neue", Helvetica, Arial, "Nimbus Sans", "Liberation Sans", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --r-background-color: var(--ground);
+  }
+  html, body, .reveal-viewport { background: var(--ground); }
+  .reveal { font-family: var(--sans); font-size: 26px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides > section {
+    box-sizing: border-box;
+    height: 100%;
+    padding: 34px 44px;
+    background: var(--stock);
+    border: 6px solid var(--ink);
+  }
+  .reveal .step {
+    display: flex; justify-content: space-between; gap: 1em;
+    margin: 0 0 14px; padding-bottom: 6px;
+    border-bottom: 12px solid var(--ink);
+    font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .reveal h2 { margin: 0 0 10px; font-size: 46px; font-weight: 900; line-height: 1.05; letter-spacing: -0.01em; }
+  .reveal p { margin: 0 0 14px; line-height: 1.35; }
+  .reveal pre {
+    margin: 0 0 16px; padding: 14px 18px;
+    border: 1px solid var(--ink); border-left: 8px solid var(--ink);
+    font: 400 16.5px/1.5 var(--mono); white-space: pre; overflow: hidden;
+  }
+  .reveal .cmd { font-weight: 700; }
+  .reveal .hit { background: var(--ink); color: var(--stock); }
+  .reveal .grade { padding: 0 0.25em; font-weight: 700; white-space: nowrap; }
+  .reveal .g-strong { background: var(--ink); color: var(--stock); }
+  .reveal .g-moderate { border: 2px solid var(--ink); }
+  .reveal .g-weak { border: 2px dashed var(--ink); }
+  .reveal .g-speculative {
+    border: 3px solid var(--ink);
+    border-image: repeating-linear-gradient(-45deg, var(--ink) 0 2px, var(--stock) 2px 4px) 3;
+  }
+  .reveal .hit .g-strong { outline: 2px solid var(--stock); }
+  .reveal .say { margin-top: 4px; padding-top: 12px; border-top: 4px solid var(--ink); font-size: 28px; }
+  .reveal table { width: 100%; border-collapse: collapse; font-size: 17px; margin: 0 0 16px; }
+  .reveal th, .reveal td { line-height: 1.4; padding: 9px 9px; border-bottom: 1px solid var(--ink); text-align: left; vertical-align: top; }
+  .reveal th { border-bottom: 4px solid var(--ink); font-weight: 700; }
+  .reveal td .grade { display: inline-block; margin-bottom: 4px; }
+  .reveal td code { font-family: var(--mono); font-size: 15px; }
+  .reveal .file { font: 700 18px var(--mono); margin-bottom: 6px; }
+  .reveal .controls, .reveal .progress { color: var(--stock); }
+  .reveal .slide-number { background: var(--ink); color: var(--stock); font-family: var(--sans); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- All dates are invented. The output is from plan.py run on 2030-10-20 in an empty folder. -->
+
+<section aria-labelledby="s1">
+  <p class="step"><span>1 / 5 · A Menstrual day</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s1">Real foods, with their source and evidence</h2>
+  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-18 --cycle-length 28</span>
+Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+  Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] <span class="grade g-strong">(evidence: Strong)</span>
+  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
+  <p class="say">Each food shows its amount per 100 g, its share of the EU reference value (NRV) and its USDA FoodData Central ID, next to how strong the evidence is. In autumn, broccoli is chosen over oranges.</p>
+</section>
+
+<section aria-labelledby="s2">
+  <p class="step"><span>2 / 5 · An Ovulatory day</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s2">Placeholder foods, and it says so</h2>
+  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-06 --cycle-length 28</span>
+Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 15 of your 28-day cycle: Ovulatory phase
+
+Nutrients that matter now, and a food that contains each:
+  Fiber: pears <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span>
+  Zinc: pumpkin seeds <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span>
+  Omega-3: salmon <span class="hit">[placeholder]</span> <span class="grade g-weak">(evidence: Weak)</span></code></pre>
+  <p class="say">Only the Menstrual phase uses real food data so far. The other three phases use hand-written stub foods, labelled as placeholders, and their evidence is weak or speculative.</p>
+</section>
+
+<section aria-labelledby="s3">
+  <p class="step"><span>3 / 5 · Exclusions</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s3">An excluded food never comes back</h2>
+  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-06 --cycle-length 28 --exclude fish</span>
+Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 15 of your 28-day cycle: Ovulatory phase
+
+Nutrients that matter now, and a food that contains each:
+  Fiber: pears [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
+  Zinc: pumpkin seeds [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
+<span class="hit">  Omega-3: walnuts [placeholder] (evidence: Weak)</span></code></pre>
+  <p class="say">Same day, with fish excluded: salmon is replaced by walnuts. Exclusions are a hard rule. Rotation and preferences never override them.</p>
+</section>
+
+<section aria-labelledby="s4">
+  <p class="step"><span>4 / 5 · Swapping a food</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s4">Don't like it? Swap it</h2>
+  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-18 --cycle-length 28 --prefer-alternative iron</span>
+Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
+
+Day 3 of your 28-day cycle: Menstrual phase
+
+Nutrients that matter now, and a food that contains each:
+<span class="hit">  Iron: spinach, cooked [3.57 mg/100 g, 26% NRV, FDC 168463] <span class="grade g-strong">(evidence: Strong)</span></span>
+<span class="hit">    note: swapped in with --prefer-alternative</span>
+  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
+    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
+  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
+  <p class="say">Back on the Menstrual day, lentils are swapped for the next candidate, spinach. The swap holds for the rest of the cycle.</p>
+</section>
+
+<section aria-labelledby="s5">
+  <p class="step"><span>5 / 5 · The file</span><span>Cycle Nutrition Planner</span></p>
+  <h2 id="s5">Everything written down, with sources</h2>
+  <p class="file">nutrients.md</p>
+  <table>
+    <thead><tr><th>Nutrient</th><th>Evidence</th><th>Food</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Iron</td><td><span class="grade g-strong">Strong</span><br>Cochrane CD009747 (2016); NHS</td><td>spinach, cooked <code>[3.57 mg/100 g, 26% NRV, FDC 168463]</code></td><td>swapped in with --prefer-alternative</td></tr>
+      <tr><td>Vitamin C</td><td><span class="grade g-moderate">Moderate</span><br>EFSA 2014 opinion; Cook &amp; Reddy 2001</td><td>broccoli, cooked <code>[64.9 mg/100 g, 81% NRV, FDC 169967]</code></td><td>chosen over oranges - out of season; swap with --prefer-alternative vitamin c</td></tr>
+      <tr><td>Magnesium</td><td><span class="grade g-moderate">Moderate</span><br>Cochrane CD002124 (2001, 2016); Saei Ghare Naz 2020</td><td>pumpkin seeds (dried) <code>[592 mg/100 g, 158% NRV, FDC 170556]</code></td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="say">Each run writes nutrients.md with the same foods and notes, plus the source for each evidence grade. A food is kept for the whole cycle, and history.json stops it from being suggested again for the same nutrient for the next 2 cycles.</p>
+</section>
+
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    center: false,
+    transition: 'none'
+  });
+</script>
+</body>
+</html>

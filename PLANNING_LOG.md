@@ -207,3 +207,5 @@ OK
 2026-11-19 — The video goes on the promo page as a new section after "Same tool, two different days", with controls, a poster frame and no autoplay, styled inline so style.css stays unchanged. Decided by: Claude.
 2026-11-19 — The local HyperFrames folders video/.hyperframes/ and video/renders/ are deleted after the render, because they hold local paths and are not needed; both stay in video/.gitignore. Decided by: user.
 2026-11-19 — The promo video is published on the live promo page by merging promo-video into main (pull request #8). Decided by: user.
+2026-11-24 — The five demo slides are one reveal.js HTML file at docs/slides/index.html, so GitHub Pages serves them at /slides/ of the project site; one slide per demo step in README Section 1. Decided by: user.
+2026-11-24 — The slides load reveal.js 5.1.0 from the jsDelivr CDN, use the promo page's look (white panel on red ground, same evidence badges), and show real plan.py output from an empty scratch folder on invented 2030 dates (today 2030-10-20; periods starting 2030-10-18 and 2030-10-06). The rotation is one sentence on slide 5, not a sixth slide. Decided by: Claude.
