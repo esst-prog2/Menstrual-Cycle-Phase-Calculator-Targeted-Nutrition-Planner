@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cycle Nutrition Planner: the demo in five slides</title>
+<title>Cycle Food Planner: five slides</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 <style>
@@ -26,144 +26,265 @@
     background: var(--stock);
     border: 6px solid var(--ink);
   }
+  .reveal a { color: var(--ink); text-decoration: underline; text-underline-offset: 0.15em; }
   .reveal .step {
     display: flex; justify-content: space-between; gap: 1em;
-    margin: 0 0 14px; padding-bottom: 6px;
+    margin: 0 0 18px; padding-bottom: 6px;
     border-bottom: 12px solid var(--ink);
     font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
   }
-  .reveal h2 { margin: 0 0 10px; font-size: 46px; font-weight: 900; line-height: 1.05; letter-spacing: -0.01em; }
-  .reveal p { margin: 0 0 14px; line-height: 1.35; }
-  .reveal pre {
-    margin: 0 0 16px; padding: 14px 18px;
-    border: 1px solid var(--ink); border-left: 8px solid var(--ink);
-    font: 400 16.5px/1.5 var(--mono); white-space: pre; overflow: hidden;
-  }
-  .reveal .cmd { font-weight: 700; }
-  .reveal .hit { background: var(--ink); color: var(--stock); }
-  .reveal .grade { padding: 0 0.25em; font-weight: 700; white-space: nowrap; }
-  .reveal .g-strong { background: var(--ink); color: var(--stock); }
-  .reveal .g-moderate { border: 2px solid var(--ink); }
-  .reveal .g-weak { border: 2px dashed var(--ink); }
+  .reveal h1 { margin: 0 0 22px; font-size: 52px; font-weight: 900; line-height: 1.02; letter-spacing: -0.015em; }
+  .reveal h2 { margin: 0 0 20px; font-size: 44px; font-weight: 900; line-height: 1.05; letter-spacing: -0.01em; }
+  .reveal h3 { margin: 0 0 12px; font-size: 26px; font-weight: 900; line-height: 1.15; }
+  .reveal p { margin: 0 0 12px; line-height: 1.3; }
+  .reveal .src { position: absolute; left: 44px; bottom: 26px; margin: 0; font-size: 16px; }
+
+  /* Evidence grade marks, as on the promo page: the weak end is the loudest. */
+  .reveal .grade { display: inline-block; padding: 0 0.3em; font-weight: 700; white-space: nowrap; line-height: 1.3; }
+  .reveal .g-strong { background: var(--ink); color: var(--stock); border: 3px solid var(--ink); }
+  .reveal .g-moderate { border: 3px solid var(--ink); }
+  .reveal .g-weak { border: 3px dashed var(--ink); }
   .reveal .g-speculative {
-    border: 3px solid var(--ink);
-    border-image: repeating-linear-gradient(-45deg, var(--ink) 0 2px, var(--stock) 2px 4px) 3;
+    border: 5px solid var(--ink);
+    border-image: repeating-linear-gradient(-45deg, var(--ink) 0 2px, var(--stock) 2px 5px) 5;
   }
-  .reveal .hit .g-strong { outline: 2px solid var(--stock); }
-  .reveal .say { margin-top: 4px; padding-top: 12px; border-top: 4px solid var(--ink); font-size: 28px; }
-  .reveal table { width: 100%; border-collapse: collapse; font-size: 17px; margin: 0 0 16px; }
-  .reveal th, .reveal td { line-height: 1.4; padding: 9px 9px; border-bottom: 1px solid var(--ink); text-align: left; vertical-align: top; }
-  .reveal th { border-bottom: 4px solid var(--ink); font-weight: 700; }
-  .reveal td .grade { display: inline-block; margin-top: 4px; font-size: 18px; }
-  .reveal td code { line-height: 1.6; font-family: var(--mono); font-size: 15px; }
-  .reveal h1 { margin: 0 0 6px; font-size: 44px; font-weight: 900; line-height: 1.02; letter-spacing: -0.015em; }
-  .reveal h2.sub { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
-  .reveal .also { font-size: 22px; margin: 0; }
-  .reveal .say.tight { font-size: 23px; margin-bottom: 8px; }
-  .reveal .cycles { font-size: 24px; }
-  .reveal .cycles td code { font-size: 17px; }
-  .reveal .cycles th:first-child { width: 26%; }
+  .reveal .hit { background: var(--ink); color: var(--stock); padding: 0 0.15em; }
+
+  /* Labels: a bold key word, then a few words. */
+  .reveal .labels { list-style: none; margin: 0; padding: 0; }
+  .reveal .labels li { margin: 0 0 12px; padding-left: 14px; border-left: 8px solid var(--ink); line-height: 1.3; }
+  .reveal .labels b { font-weight: 900; }
+
+  /* Slide 1: the 28-day phase bar. */
+  .reveal .bar { display: grid; grid-template-columns: 5fr 7fr 3fr 13fr; margin: 6px 0 26px; border: 3px solid var(--ink); }
+  .reveal .bar > div { padding: 8px 10px; border-left: 3px solid var(--ink); font-size: 18px; line-height: 1.3; }
+  .reveal .bar > div:first-child { border-left: 0; background: var(--ink); color: var(--stock); }
+  .reveal .bar b { display: block; font-size: 20px; }
+  .reveal .bar .days { font-size: 15px; }
+
+  /* Slide 2: two real runs side by side. */
+  .reveal .given { display: inline-block; margin: 0 0 16px; padding: 4px 12px; border: 3px solid var(--ink); font-size: 22px; }
+  .reveal .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .reveal .verdict { margin: 0 0 2px; font-size: 30px; font-weight: 900; line-height: 1.1; }
+  .reveal .verdict small { font-size: 22px; font-weight: 700; }
+  .reveal .kind { margin: 0 0 8px; font-size: 19px; }
+  .reveal .out {
+    margin: 0; padding: 10px 14px;
+    border: 1px solid var(--ink); border-left: 8px solid var(--ink);
+    font: 400 16px/1.42 var(--mono);
+  }
+  .reveal .out span.l { display: block; white-space: pre-wrap; }
+  .reveal .out .l0 { margin-bottom: 6px; font-weight: 700; }
+  .reveal .out .l1 { padding-left: 4ch; text-indent: -2ch; }
+  .reveal .out .l2 { padding-left: 6ch; text-indent: -2ch; }
+  .reveal .out .grade { line-height: 1.15; text-indent: 0; }
+  .reveal .key { margin: 18px 0 0; font-size: 21px; }
+  .reveal .key .grade { margin: 0 0.15em; }
+
+  /* Slide 3: two columns, the second one bigger. */
+  .reveal .cols { display: grid; grid-template-columns: 1fr 1.55fr; gap: 26px; align-items: start; }
+  .reveal .col { padding: 14px 18px; border: 3px solid var(--ink); }
+  .reveal .col.mine { border-width: 8px; }
+  .reveal .col .q { font-size: 23px; }
+  .reveal .col.mine .q { font-size: 28px; }
+  .reveal table { width: 100%; border-collapse: collapse; font-size: 19px; margin: 0 0 12px; }
+  .reveal td { padding: 6px 4px; border-bottom: 1px solid var(--ink); vertical-align: middle; }
+  .reveal .tag { font-size: 18px; margin: 0; }
+  .reveal .fdc { margin: 0 0 12px; font: 400 17px/1.4 var(--mono); }
+  .reveal .stats { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: baseline; margin: 0; }
+  .reveal .stats dt { font-size: 40px; font-weight: 900; line-height: 1; text-align: right; }
+  .reveal .stats dt small { display: block; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+  .reveal .stats dd { margin: 0; font-size: 22px; line-height: 1.25; }
+
+  /* Slide 4: the two days. */
+  .reveal .pass { display: inline-block; margin: 0 0 16px; padding: 4px 14px; background: var(--ink); color: var(--stock); font-size: 24px; font-weight: 700; }
+  .reveal .days2 { display: grid; grid-template-columns: 1fr 1fr; margin: 0 0 6px; border: 3px solid var(--ink); }
+  .reveal .days2 > div { padding: 10px 16px; font-size: 22px; }
+  .reveal .days2 > div + div { border-left: 3px solid var(--ink); }
+  .reveal .days2 code { font: 700 26px/1.4 var(--mono); }
+  .reveal .samecycle { margin: 0 0 22px; font-size: 20px; font-weight: 700; text-align: center; }
+
+  /* Slide 5: food to meal. */
+  .reveal .flow { display: flex; align-items: center; gap: 18px; margin: 10px 0 30px; }
+  .reveal .flow .box { padding: 12px 18px; border: 3px solid var(--ink); font-size: 24px; }
+  .reveal .flow .box.next { border-style: dashed; font-weight: 700; }
+  .reveal .flow .arrow { font-size: 34px; font-weight: 900; }
+  .reveal .flow code { font-family: var(--mono); font-size: 21px; }
+
+  /* Closing. */
+  .reveal .slides > section.end { padding-top: 230px; }
+  /* Slides with little on them get bigger labels. */
+  .reveal .roomy .labels li { font-size: 32px; margin-bottom: 18px; }
+  .reveal .roomy .flow .box { font-size: 30px; }
+  .reveal .roomy .flow code { font-size: 27px; }
+  .reveal .roomy .days2 > div { font-size: 26px; padding: 14px 18px; }
+  .reveal .roomy .days2 code { font-size: 34px; }
+  .reveal .roomy .samecycle { font-size: 24px; margin-bottom: 30px; }
+  .reveal .end .big { font-size: 60px; font-weight: 900; line-height: 1.05; margin: 0 0 34px; }
+  .reveal .end .link { font-size: 26px; word-break: break-all; }
+
   .reveal .controls, .reveal .progress { color: var(--stock); }
-  .reveal .slide-number { background: var(--ink); color: var(--stock); font-family: var(--sans); }
 </style>
 </head>
 <body>
 <div class="reveal">
 <div class="slides">
 
-<!-- All dates are invented. The output is from plan.py run in an empty folder on 2030-10-20 (slides 1-4) and on 2030-10-20 then 2030-11-17 (slide 5). -->
+<!-- All dates are invented. Slide 2 is real plan.py output from two empty scratch folders on
+     2030-10-20: periods starting 2030-10-18 (day 3) and 2030-10-07 (day 14), 28-day cycle.
+     It shows the day line and the suggestion lines; the disclaimer line ("Not nutrition advice.
+     Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.")
+     and the "Nutrients that matter now" header are left out. Slide 4's dates are the invented
+     test dates from REVIEWS.md, Review 2, finding b3. -->
 
-<section aria-labelledby="title">
-  <p class="step"><span>1 / 5 · A Menstrual day</span><span>Cycle Nutrition Planner</span></p>
-  <h1 id="title">A cycle food planner that tells you when it's guessing.</h1>
-  <h2 class="sub">A Menstrual day: real foods, with their source and evidence</h2>
-  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-18 --cycle-length 28</span>
-Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
-
-Day 3 of your 28-day cycle: Menstrual phase
-
-Nutrients that matter now, and a food that contains each:
-  Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] <span class="grade g-strong">(evidence: Strong)</span>
-  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
-    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
-  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
-  <p class="say tight">Each food shows its amount per 100 g, its share of the EU reference value (NRV) and its USDA FoodData Central ID, next to how strong the evidence is. In autumn, broccoli is chosen over oranges.</p>
-  <p class="also">Each run also writes nutrients.md, with the same foods and notes plus the source for each evidence grade.</p>
+<section aria-labelledby="s1">
+  <p class="step"><span>1 / 5 · For whom, and why</span><span>Cycle food planner</span></p>
+  <h1 id="s1">A cycle food planner that tells you when it's guessing</h1>
+  <div class="bar" aria-label="A 28-day cycle and the nutrients the tool picks in each phase">
+    <div><b>Menstrual</b><span class="days">days 1–5</span><br>iron · vitamin C · magnesium</div>
+    <div><b>Follicular</b><span class="days">days 6–12</span><br>folate · protein · vitamin E</div>
+    <div><b>Ovulatory</b><span class="days">13–15</span><br>fiber · zinc · omega-3</div>
+    <div><b>Luteal</b><span class="days">days 16–28</span><br>magnesium · calcium · vitamin B6</div>
+  </div>
+  <ul class="labels">
+    <li><b>For:</b> women who want to eat for their cycle</li>
+    <li><b>Why:</b> your needs can change through your cycle (for example, you lose iron during your period), and it's hard to know what to eat when</li>
+    <li><b>Goal:</b> the right nutrients in each phase, with one food for each</li>
+  </ul>
+  <aside class="notes">
+    By the end of these five minutes, you'll know how this tool helps you plan what to eat in each phase of your cycle, and how much of that advice is actually backed by research.
+    The bar shows a 28-day cycle and its four phases, with the three nutrients my tool picks for each one.
+    I built it for women who want to eat for their cycle. Your body's needs can change through the cycle: for example, you lose iron with your period. But it's hard to know what to eat, and when.
+    So the goal is simple: for the phase you're in, the right nutrients, and one food for each.
+    And the main point, which I'll come back to: it tells you when it's guessing.
+  </aside>
 </section>
 
 <section aria-labelledby="s2">
-  <p class="step"><span>2 / 5 · An Ovulatory day</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s2">Placeholder foods, and it says so</h2>
-  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-06 --cycle-length 28</span>
-Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
-
-Day 15 of your 28-day cycle: Ovulatory phase
-
-Nutrients that matter now, and a food that contains each:
-  Fiber: pears <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span>
-  Zinc: pumpkin seeds <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span>
-  Omega-3: salmon <span class="hit">[placeholder]</span> <span class="grade g-weak">(evidence: Weak)</span></code></pre>
-  <p class="say">Only the Menstrual phase uses real food data so far. The other three phases use hand-written stub foods, labelled as placeholders, and their evidence is weak or speculative.</p>
+  <p class="step"><span>2 / 5 · The demo, from a real run</span><span>Cycle food planner</span></p>
+  <h2 id="s2">Same tool, two days: it tells you which advice is a guess</h2>
+  <p class="given"><b>You enter:</b> when your period started + your cycle length</p>
+  <div class="pair">
+    <div>
+      <p class="verdict">backed by research <small>(Strong, Moderate)</small></p>
+      <p class="kind">real food data</p>
+      <pre class="out"><code><span class="l l0">Day 3 of your 28-day cycle: Menstrual phase</span><span class="l l1">Iron: lentils, cooked [3.33 mg/100 g, 24% NRV, FDC 172421] <span class="grade g-strong">(evidence: Strong)</span></span><span class="l l1">Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span></span><span class="l l2">note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c</span><span class="l l1">Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></span></code></pre>
+    </div>
+    <div>
+      <p class="verdict">a guess <small>(Weak, Speculative)</small></p>
+      <p class="kind">example foods, not real data yet</p>
+      <pre class="out"><code><span class="l l0">Day 14 of your 28-day cycle: Ovulatory phase</span><span class="l l1">Fiber: pears <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span></span><span class="l l1">Zinc: pumpkin seeds <span class="hit">[placeholder]</span> <span class="grade g-speculative">(evidence: Speculative)</span></span><span class="l l1">Omega-3: salmon <span class="hit">[placeholder]</span> <span class="grade g-weak">(evidence: Weak)</span></span></code></pre>
+    </div>
+  </div>
+  <p class="key"><span class="grade g-strong">Strong</span> · <span class="grade g-moderate">Moderate</span> · <span class="grade g-weak">Weak</span> · <span class="grade g-speculative">Speculative</span></p>
+  <aside class="notes">
+    You give the tool two things: the day your period started and how long your cycle usually is. These are two real runs, on made-up dates.
+    On the left, day 3, the Menstrual phase. Iron, vitamin C and magnesium, each with one food. These foods are real: the amounts come from USDA's food database. And the research behind these nutrients is Strong or Moderate.
+    On the right, day 14, the Ovulatory phase. Same tool, but now every food is marked as a placeholder: an example, not real data yet. And the research is Weak or Speculative, which means I found nothing solid behind it.
+    The tool doesn't hide that. It tells you which advice is a guess.
+    The grades go from Strong, the best, down to Speculative, where no study was found at all.
+  </aside>
 </section>
 
 <section aria-labelledby="s3">
-  <p class="step"><span>3 / 5 · Exclusions</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s3">An excluded food never comes back</h2>
-  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-06 --cycle-length 28 --exclude fish</span>
-Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
-
-Day 15 of your 28-day cycle: Ovulatory phase
-
-Nutrients that matter now, and a food that contains each:
-  Fiber: pears [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
-  Zinc: pumpkin seeds [placeholder] <span class="grade g-speculative">(evidence: Speculative)</span>
-<span class="hit">  Omega-3: walnuts [placeholder] (evidence: Weak)</span></code></pre>
-  <p class="say">Same day, with fish excluded: salmon is replaced by walnuts. Exclusions are a hard rule. Rotation and preferences never override them.</p>
+  <p class="step"><span>3 / 5 · Why it works: I was in control</span><span>Cycle food planner</span></p>
+  <h2 id="s3">I checked the food data myself</h2>
+  <div class="cols">
+    <div class="col">
+      <h3 class="q">Does this nutrient help in the Menstrual phase?</h3>
+      <table>
+        <tr><td>Iron</td><td>Cochrane, NHS</td><td><span class="grade g-strong">Strong</span></td></tr>
+        <tr><td>Vitamin C</td><td>EFSA</td><td><span class="grade g-moderate">Moderate</span></td></tr>
+        <tr><td>Magnesium</td><td>Cochrane</td><td><span class="grade g-moderate">Moderate</span></td></tr>
+      </table>
+      <p class="tag">found by my coding agent, I went through the results</p>
+      <p class="tag"><a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/blob/main/EVIDENCE.md">EVIDENCE.md</a></p>
+    </div>
+    <div class="col mine">
+      <h3 class="q">Does this food contain it?</h3>
+      <p class="tag"><b>USDA's food database</b></p>
+      <p class="fdc">pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556]</p>
+      <dl class="stats">
+        <dt>5<small>of 10</small></dt><dd>I checked 5 of the agent's values myself</dd>
+        <dt>5<small>of 5</small></dt><dd>I looked up all 5 magnesium values myself</dd>
+        <dt>15<small>of 15</small></dt><dd>all 15 locked in the tests: a changed value fails a test</dd>
+      </dl>
+    </div>
+  </div>
+  <aside class="notes">
+    Every suggestion on the Menstrual day is really two claims, and each one needs a source.
+    First: does this nutrient help in this phase? My coding agent searched Cochrane, the NHS, EFSA and PubMed, and I went through what it found. Iron is Strong, vitamin C and magnesium are Moderate. Every source and quote is in EVIDENCE.md.
+    Second: does this food actually contain the nutrient? That's the part I checked myself. The agent took the iron and vitamin C values from USDA's food database, and I checked five of those ten by hand on the USDA website. The five magnesium values I looked up myself.
+    All 15 values are written into the tests. If anyone changes one, a test fails.
+    This is only true for the Menstrual phase. The other phases are still example foods, and the tool says so.
+  </aside>
 </section>
 
-<section aria-labelledby="s4">
-  <p class="step"><span>4 / 5 · Swapping a food</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s4">Don't like it? Swap it</h2>
-  <pre><code><span class="cmd">$ python3 plan.py --last-period 2030-10-18 --cycle-length 28 --prefer-alternative iron</span>
-Not nutrition advice. Foods marked [placeholder] come from a stub database that has not been evidence-reviewed.
-
-Day 3 of your 28-day cycle: Menstrual phase
-
-Nutrients that matter now, and a food that contains each:
-<span class="hit">  Iron: spinach, cooked [3.57 mg/100 g, 26% NRV, FDC 168463] <span class="grade g-strong">(evidence: Strong)</span></span>
-<span class="hit">    note: swapped in with --prefer-alternative</span>
-  Vitamin C: broccoli, cooked [64.9 mg/100 g, 81% NRV, FDC 169967] <span class="grade g-moderate">(evidence: Moderate)</span>
-    note: chosen over oranges - out of season; swap with --prefer-alternative vitamin c
-  Magnesium: pumpkin seeds (dried) [592 mg/100 g, 158% NRV, FDC 170556] <span class="grade g-moderate">(evidence: Moderate)</span></code></pre>
-  <p class="say">Back on the Menstrual day, lentils are swapped for the next candidate, spinach. The swap holds for the rest of the cycle.</p>
+<section class="roomy" aria-labelledby="s4">
+  <p class="step"><span>4 / 5 · What I learned</span><span>Cycle food planner</span></p>
+  <h2 id="s4">Passing tests didn't mean the code was right</h2>
+  <p class="pass">✓ All tests passed</p>
+  <div class="days2">
+    <div>30 Nov · autumn<br><code>Fiber: pears</code></div>
+    <div>1 Dec · winter<br><code>Fiber: <span class="hit">oats</span></code></div>
+  </div>
+  <p class="samecycle">Same cycle: one day pears, the next day oats</p>
+  <ul class="labels">
+    <li><b>My rule:</b> one food for the whole cycle</li>
+    <li>Found by checking the code against my spec, in my code review</li>
+  </ul>
+  <p class="src">Review 2, finding b3 · fixed in <a href="https://github.com/esst-prog2/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/commit/b0019776fd120f36805060c75aebe97f40124983">commit b001977</a></p>
+  <aside class="notes">
+    All my tests passed. But in my code review, I compared the code with my spec.
+    My rule was: once the tool picks a food for a nutrient, you keep it for the whole cycle.
+    In a test run, the same cycle gave pears on the 30th of November and oats on the 1st of December. Overnight, autumn turned into winter, and the tool picked again instead of keeping the food it had saved.
+    No test ran the same cycle across a change of season, so everything was green.
+    I fixed it: a re-run now keeps the saved food. And I added a test that fails on the old code.
+    What I learned: passing tests only check the cases you thought of. The spec is what tells you if the code is right.
+  </aside>
 </section>
 
-<section aria-labelledby="s5">
-  <p class="step"><span>5 / 5 · Rotation</span><span>Cycle Nutrition Planner</span></p>
-  <h2 id="s5">Two cycles in a row, three new foods</h2>
-  <table class="cycles">
-    <thead><tr><th>Day 3, Menstrual phase</th><th>Cycle 1: period started 2030-10-18</th><th>Cycle 2: period started 2030-11-15</th></tr></thead>
-    <tbody>
-      <tr><td>Iron <span class="grade g-strong">Strong</span></td><td>lentils, cooked<br><code>[3.33 mg/100 g, 24% NRV, FDC 172421]</code></td><td><span class="hit">spinach, cooked</span><br><code>[3.57 mg/100 g, 26% NRV, FDC 168463]</code></td></tr>
-      <tr><td>Vitamin C <span class="grade g-moderate">Moderate</span></td><td>broccoli, cooked<br><code>[64.9 mg/100 g, 81% NRV, FDC 169967]</code></td><td><span class="hit">oranges</span><br><code>[53.2 mg/100 g, 67% NRV, FDC 169097]</code></td></tr>
-      <tr><td>Magnesium <span class="grade g-moderate">Moderate</span></td><td>pumpkin seeds (dried)<br><code>[592 mg/100 g, 158% NRV, FDC 170556]</code></td><td><span class="hit">almonds (raw)</span><br><code>[270 mg/100 g, 72% NRV, FDC 170567]</code></td></tr>
-    </tbody>
-  </table>
-  <p class="say">The same command, one cycle apart, in the same folder. A food is kept for the whole cycle, and history.json stops it from being suggested again for the same nutrient for the next 2 cycles, so the foods vary from month to month.</p>
+<section class="roomy" aria-labelledby="s5">
+  <p class="step"><span>5 / 5 · What's next</span><span>Cycle food planner</span></p>
+  <h2 id="s5">Next: recipes from a trusted source</h2>
+  <div class="flow" aria-label="From a suggested food to a meal">
+    <span class="box"><code>lentils, cooked</code></span>
+    <span class="arrow" aria-hidden="true">→</span>
+    <span class="box next">a simple meal</span>
+  </div>
+  <ul class="labels">
+    <li>turn each suggested food into a simple meal</li>
+    <li>only from a reliable source, so exclusions like dairy or nuts stay safe</li>
+  </ul>
+  <aside class="notes">
+    Right now the tool names a food, like cooked lentils. The next step is to turn each suggested food into a simple meal.
+    I left recipes out so far: they were too big for the time I had, and I had no source for them.
+    So the recipes have to come from a reliable source. If you exclude dairy or nuts, the meal has to respect that too, just like the foods do today.
+  </aside>
+</section>
+
+<section class="end" aria-labelledby="s6">
+  <p class="big" id="s6">It tells you when it's guessing.</p>
+  <p class="link"><a href="https://esst-prog2.github.io/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/">esst-prog2.github.io/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner</a></p>
+  <aside class="notes">
+    So, once more: it tells you when it's guessing. The link takes you to the promo page, with a short video and the code. Thank you.
+  </aside>
 </section>
 
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script>
   Reveal.initialize({
     hash: true,
-    slideNumber: 'c/t',
+    slideNumber: false,
     width: 1280,
     height: 720,
     margin: 0.04,
     center: false,
-    transition: 'none'
+    transition: 'none',
+    plugins: [RevealNotes]
   });
 </script>
 </body>
