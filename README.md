@@ -24,7 +24,11 @@ The specs in `openspec/` were written with [OpenSpec](https://github.com/Fission
 ## 1. The Demo
 I open my terminal and tell the planner that my period started two days ago. It says I am on day 3, in the Menstrual phase, and lists the three nutrients that matter now: iron, vitamin C and magnesium, with one food for each. These foods are real. Next to each one I can see how much of the nutrient it has, from USDA FoodData Central, and how strong the evidence is that this nutrient matters in this phase. Then I try a date in the Ovulatory phase. There the foods are still placeholders, and the tool clearly says so. I exclude fish and salmon is gone. I swap a food I don't want. At the end I open the file it created, where everything is written down with its sources.
 
-A 5-minute demo, run alongside the slides. The output below is from an autumn
+The 5-minute talk is five slides and a closing slide, in `docs/slides/`
+([live](https://esst-prog2.github.io/Menstrual-Cycle-Phase-Calculator-Targeted-Nutrition-Planner/slides/)):
+who it is for, day 3 and day 14 side by side from real runs, how I checked the
+food data, what I learned in Review 2, and what's next. The steps below
+reproduce the tool's output in a terminal. The output below is from an autumn
 day; the season decides some picks (in autumn, broccoli is chosen over
 oranges for Vitamin C).
 
@@ -99,8 +103,7 @@ the same foods and notes plus the source for each evidence tier:
 
 **Rotation, in one sentence:** a food is kept for the whole cycle, and
 `history.json` makes sure it is not suggested again for the same nutrient in
-the next 2 cycles, so the foods vary from month to month. A slide shows two
-consecutive cycles side by side.
+the next 2 cycles, so the foods vary from month to month.
 
 ## 2. The Shape
 **in:** The start date of my last period, my average cycle length, any food exclusions (optional), a local `nutrition_rules.json` rulebook, and a lightweight `history.json` tracking recent recommendations.  
